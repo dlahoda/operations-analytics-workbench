@@ -166,7 +166,7 @@ The user can open one workspace, inspect mock operational data, change the analy
 
 #### Included in `v0.0.0`
 
-- one mock operational dataset;
+- one generated mock operational dataset containing 2,500 orders;
 - one `/workbench` route;
 - predefined saved views;
 - filters for date range, region, category, and status;
@@ -201,19 +201,24 @@ The user can open one workspace, inspect mock operational data, change the analy
 
 #### First Scenario
 
-The recommended first scenario is:
-
-**Refund rate +5 percentage points**
+The initial scenario is an **Average Order Value percentage adjustment** from `-10%` to `+10%`.
 
 The interface should show:
 
 - the current active view;
-- baseline refund rate;
-- projected refund rate;
-- baseline refund amount;
-- projected refund amount;
-- projected net revenue impact;
+- baseline Average Order Value;
+- projected Average Order Value;
+- baseline revenue;
+- projected revenue;
+- projected revenue impact;
 - clear delta labels.
+
+The scenario holds the baseline order count constant and uses:
+
+```text
+projectedAOV = baselineAOV × (1 + adjustment / 100)
+projectedRevenue = projectedAOV × baselineOrderCount
+```
 
 The scenario applies only to the current filtered dataset. It does not persist and does not mutate the source records.
 
@@ -376,24 +381,21 @@ Conceptual fields:
 ```ts
 type ScenarioState = {
   enabled: boolean;
-  type: "refund-rate" | "conversion" | "average-order-value";
-  adjustmentValue: number;
+  type: "average-order-value";
+  adjustmentPercent: number;
 };
 ```
 
-Only one scenario adjustment is active at a time.
+Only one scenario adjustment is active at a time. The initial adjustment range is `-10%` to `+10%`.
 
 ### 8.5 Mock Data Requirements
 
-The dataset should contain intentional patterns rather than uniformly random values.
+The generated dataset contains 2,500 orders and encodes intentional patterns rather than uniformly random values:
 
-Recommended patterns:
-
-- Europe has elevated refund pressure;
-- Electronics produces high revenue and a higher refund rate;
-- one channel has a larger share of partially refunded orders;
-- one category has strong revenue but weaker margin;
-- pending orders cluster in a meaningful business slice.
+- a refund hotspot;
+- a regional fulfillment problem;
+- a high-volume, low-AOV segment;
+- a mixed anomaly where a strong-revenue segment also has elevated refunds.
 
 These patterns make saved views, filters, and charts tell a coherent story.
 
@@ -407,7 +409,7 @@ The sequence is:
 
 1. load raw mock records;
 2. resolve the active saved view;
-3. apply active filters and search;
+3. apply active filters;
 4. calculate baseline metrics;
 5. feed the same records to the table and charts.
 
@@ -423,7 +425,14 @@ The sequence is:
 4. compare projected values with baseline values;
 5. display the delta without mutating source records.
 
-The exact formula for each scenario must be explicit and testable. Scenario calculations must not live inside presentation components.
+The initial AOV scenario uses:
+
+```text
+projectedAOV = baselineAOV × (1 + adjustment / 100)
+projectedRevenue = projectedAOV × baselineOrderCount
+```
+
+The adjustment is constrained to `-10%` through `+10%`. Scenario calculations must remain explicit, testable, and outside presentation components.
 
 ## 10. UI Information Architecture
 
@@ -486,6 +495,8 @@ Suggested content:
 
 #### Scenario Panel
 
+When enabled, Scenario Mode appears as an inline panel above the KPI cards.
+
 The panel should show:
 
 - scenario type;
@@ -529,7 +540,7 @@ Shows a selected table row and a right-side record drawer while preserving the w
 Shows the signature interaction:
 
 - Scenario Mode enabled;
-- one refund-rate adjustment;
+- one AOV percentage adjustment;
 - baseline and projected KPI comparison;
 - clear impact summary.
 
@@ -550,8 +561,8 @@ Expected asset names:
 - React;
 - TypeScript;
 - Tailwind CSS;
-- table library: TanStack Table or AG Grid Community, decision pending;
-- chart library: decision pending.
+- TanStack Table;
+- Recharts.
 
 ### 12.2 Role of Next.js
 
@@ -572,7 +583,7 @@ Next.js is not the center of the product logic. The workbench remains an interac
 
 The `/workbench` route remains a Server Component. It prepares the initial snapshot and renders one coherent client-side workbench subtree.
 
-The interactive session is owned by a root Client Component, conceptually named `WorkbenchClient`.
+The interactive session is coordinated across focused Client Components within the workbench.
 
 Pure TypeScript modules own filtering, metrics, saved-view resolution, and scenario calculations.
 
@@ -598,16 +609,14 @@ The client workbench owns:
 
 - active filters;
 - active saved view;
-- search;
-- sorting and pagination;
-- table column state;
+- sorting;
 - selected order;
 - detail drawer state;
 - temporary scenario state;
 - KPI and chart updates;
 - URL updates for shareable analytical context.
 
-This should be one coherent client subtree rather than many unrelated `"use client"` boundaries.
+Client boundaries should share coordinated workbench state without requiring one monolithic component.
 
 ### 13.4 URL-Backed State
 
@@ -617,9 +626,7 @@ State that defines the analytical context and should survive refresh may be stor
 - date range;
 - region;
 - category;
-- status;
-- search query;
-- table page when pagination is implemented.
+- status.
 
 Example:
 
@@ -650,7 +657,7 @@ Server route loads initial data
 WorkbenchClient receives serializable records
     |
     v
-Active view, filters, and search produce filteredOrders
+Active view and filters produce filteredOrders
     |
     +--> KPI calculations
     +--> charts
@@ -840,18 +847,7 @@ The intended portfolio story is:
 
 ## 18. Open Questions
 
-The following decisions remain open:
-
-1. TanStack Table or AG Grid Community?
-2. Which chart library best fits the chosen visual direction?
-3. What is the final generated dataset size?
-4. Which exact business patterns should be encoded in the dataset?
-5. What is the exact formula and unit for each supported scenario?
-6. Should table pagination be URL-backed in `v0.0.0` or added later?
-7. Should Scenario Mode use a side drawer or an inline panel?
-8. Which table capabilities are required before the first prototype is considered credible?
-
-Open questions should move into a decision record when resolved. They should not remain permanent TODO items inside this document.
+No open product or architecture questions are currently recorded. New unresolved choices belong in `./docs/backlog.md` until decided.
 
 ## 19. Delivery Strategy
 

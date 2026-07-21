@@ -26,9 +26,4 @@ Items here are deferred beyond the active `v0.0.0` prototype or still require a 
 
 ## Open questions
 
-1. TanStack Table or AG Grid Community?
-2. Which chart library best fits the visual direction?
-3. What should the final generated dataset size be?
-4. Which exact business patterns should the dataset encode?
-5. What are the exact formula and unit for each supported scenario?
-6. Should Scenario Mode use a side drawer or an inline panel?
+- None currently.

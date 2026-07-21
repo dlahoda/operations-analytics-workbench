@@ -26,9 +26,9 @@ This file records durable product and architecture decisions already established
 ## 004 — Constrained Scenario Mode is a temporary projection
 
 - **Status:** Accepted
-- **Decision:** Scenario Mode applies one numeric what-if adjustment at a time to the current filtered baseline. It calculates clearly labeled projected metrics without mutating or persisting source records.
+- **Decision:** Initial Scenario Mode is an AOV percentage adjustment from `-10%` to `+10%`, shown in an inline panel above the KPI cards. It uses `projectedAOV = baselineAOV × (1 + adjustment / 100)` and `projectedRevenue = projectedAOV × baselineOrderCount`.
 - **Rationale:** A small scenario interaction adds analytical depth while preventing the prototype from expanding into a forecasting platform.
-- **Consequences:** Baseline and projected values remain distinct; scenario calculations are explicit, testable, and scoped to the active filtered view. Multiple assumptions, persistence, comparison, and advanced forecasting remain out of scope.
+- **Consequences:** The baseline order count remains constant. Baseline and projected values stay distinct, calculations are scoped to the active filtered view, and source records are neither mutated nor persisted. Multiple assumptions, persistence, comparison, and advanced forecasting remain out of scope.
 
 ## 005 — Saved views store analytical UI state, not data copies
 
@@ -57,3 +57,17 @@ This file records durable product and architecture decisions already established
 - **Decision:** Store shareable analytical context in the URL where practical, including the active saved view and filters. Keep temporary or presentational state local, including selection, drawer visibility, density, and scenario adjustment.
 - **Rationale:** Refreshable and shareable analysis should survive navigation, while transient interaction state should not create noisy or misleading URLs.
 - **Consequences:** The server can resolve initial analytical context from search parameters, and the client updates relevant parameters during the session. Temporary Scenario Mode does not persist through the URL.
+
+## 009 — TanStack Table and Recharts for analytical UI
+
+- **Status:** Accepted
+- **Decision:** Use TanStack Table for the operations table and Recharts for supporting charts.
+- **Rationale:** These are the selected implementation foundations for the product's core analytical surfaces.
+- **Consequences:** Table and chart UI modules use these libraries while filtering, metrics, and scenario calculations remain framework-independent domain logic.
+
+## 010 — Generated dataset size and analytical patterns
+
+- **Status:** Accepted
+- **Decision:** Generate 2,500 orders with a refund hotspot, a regional fulfillment problem, a high-volume low-AOV segment, and a mixed anomaly where a strong-revenue segment also has elevated refunds.
+- **Rationale:** A fixed, intentionally patterned dataset supports credible recurring operational questions and coherent analytical stories.
+- **Consequences:** Saved views, filters, KPIs, charts, and table records should expose these patterns rather than relying on uniformly random data.

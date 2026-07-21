@@ -113,6 +113,11 @@ function applyAovAnomaly(orders: Order[]): Order[] {
   const otherElectronics = orders.filter(
     (order) => order.region !== "Europe" && order.category === "Electronics",
   );
+
+  if (europeElectronics.length === 0 || otherElectronics.length === 0) {
+    return orders;
+  }
+
   const average = (records: Order[]) =>
     records.reduce((sum, order) => sum + order.orderValue, 0) / records.length;
   const correctionFactor =

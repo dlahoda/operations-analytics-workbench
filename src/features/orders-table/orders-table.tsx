@@ -58,6 +58,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
   const table = useReactTable({
     data: orders,
     columns,
+    getRowId: (order) => order.orderId,
     state: { sorting },
     onSortingChange: setSorting,
     getCoreRowModel: getCoreRowModel(),

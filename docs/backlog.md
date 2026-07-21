@@ -5,7 +5,6 @@ Items here are deferred beyond the active `v0.0.0` prototype or still require a 
 ## Next milestone
 
 - Add search across useful order fields.
-- Add table pagination.
 - Add basic column visibility or configuration.
 - Let users save the current filters and table configuration as a named local view.
 - Persist custom local views in browser storage and support resetting to the default view.

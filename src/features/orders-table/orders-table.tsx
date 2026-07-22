@@ -59,8 +59,11 @@ export function OrdersTable({ orders }: OrdersTableProps) {
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    autoResetPageIndex: true,
     initialState: { pagination: { pageSize: 20 } },
   });
+
+  const hasOrders = orders.length > 0;
 
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
@@ -99,22 +102,37 @@ export function OrdersTable({ orders }: OrdersTableProps) {
             ))}
           </thead>
           <tbody className="divide-y divide-slate-100">
-            {table.getRowModel().rows.map((row) => (
-              <tr key={row.id} className="text-slate-700 transition hover:bg-blue-50/50">
-                {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="whitespace-nowrap px-4 py-3">
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </td>
-                ))}
+            {hasOrders ? (
+              table.getRowModel().rows.map((row) => (
+                <tr key={row.id} className="text-slate-700 transition hover:bg-blue-50/50">
+                  {row.getVisibleCells().map((cell) => (
+                    <td key={cell.id} className="whitespace-nowrap px-4 py-3">
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={columns.length} className="px-5 py-12 text-center">
+                  <p className="font-medium text-slate-700">
+                    No orders match the active filters
+                  </p>
+                  <p className="mt-1 text-sm text-slate-500">
+                    Reset the filters above to return to the full dataset.
+                  </p>
+                </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>
 
       <div className="flex items-center justify-between border-t border-slate-200 px-5 py-3 text-sm text-slate-600">
         <span>
-          Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+          {hasOrders
+            ? `Page ${table.getState().pagination.pageIndex + 1} of ${table.getPageCount()}`
+            : "No pages"}
         </span>
         <div className="flex gap-2">
           <button

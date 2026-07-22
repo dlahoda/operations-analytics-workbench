@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { DEFAULT_WORKBENCH_FILTERS, filterOrders } from "@/domain/filters";
 import { calculateMetrics } from "@/domain/metrics";
 import type { Order } from "@/domain/orders";
+import { CategoryFilter } from "@/features/filters/category-filter";
 import { RegionFilter } from "@/features/filters/region-filter";
 import { MetricCards } from "@/features/metrics/metric-cards";
 import { OrdersTable } from "@/features/orders-table/orders-table";
@@ -20,6 +21,7 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
     [filters, initialOrders],
   );
   const metrics = useMemo(() => calculateMetrics(filteredOrders), [filteredOrders]);
+  const hasActiveFilters = filters.region !== null || filters.category !== null;
 
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950">
@@ -45,10 +47,47 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
           aria-label="Workbench filters"
           className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm"
         >
-          <RegionFilter
-            value={filters.region}
-            onChange={(region) => setFilters({ region })}
-          />
+          <div className="flex flex-wrap gap-4">
+            <RegionFilter
+              value={filters.region}
+              onChange={(region) => setFilters((current) => ({ ...current, region }))}
+            />
+            <CategoryFilter
+              value={filters.category}
+              onChange={(category) =>
+                setFilters((current) => ({ ...current, category }))
+              }
+            />
+          </div>
+
+          {hasActiveFilters ? (
+            <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-slate-200 pt-4">
+              <span className="mr-1 text-xs font-medium text-slate-500">
+                Active filters
+              </span>
+              {filters.region ? (
+                <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800">
+                  Region: {filters.region}
+                </span>
+              ) : null}
+              {filters.category ? (
+                <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800">
+                  Category: {filters.category}
+                </span>
+              ) : null}
+              <button
+                type="button"
+                className="ml-auto rounded-md border border-slate-300 px-3 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                onClick={() => setFilters(DEFAULT_WORKBENCH_FILTERS)}
+              >
+                Reset filters
+              </button>
+            </div>
+          ) : (
+            <p className="mt-4 border-t border-slate-200 pt-4 text-xs text-slate-500">
+              No active filters
+            </p>
+          )}
         </section>
 
         <MetricCards metrics={metrics} />

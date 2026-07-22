@@ -12,12 +12,7 @@ import {
 import { useMemo, useState } from "react";
 
 import type { Order } from "@/domain/orders";
-
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
+import { formatNumber, formatUsd } from "@/lib/formatters";
 
 type OrdersTableProps = {
   orders: Order[];
@@ -37,17 +32,17 @@ export function OrdersTable({ orders }: OrdersTableProps) {
       {
         accessorKey: "revenue",
         header: "Revenue",
-        cell: ({ getValue }) => currencyFormatter.format(getValue<number>()),
+        cell: ({ getValue }) => formatUsd(getValue<number>()),
       },
       {
         accessorKey: "refundAmount",
         header: "Refund",
-        cell: ({ getValue }) => currencyFormatter.format(getValue<number>()),
+        cell: ({ getValue }) => formatUsd(getValue<number>()),
       },
       {
         accessorKey: "margin",
         header: "Margin",
-        cell: ({ getValue }) => currencyFormatter.format(getValue<number>()),
+        cell: ({ getValue }) => formatUsd(getValue<number>()),
       },
       { accessorKey: "channel", header: "Channel" },
     ],
@@ -73,7 +68,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         <div>
           <h2 className="font-semibold text-slate-950">Orders</h2>
           <p className="mt-1 text-xs text-slate-500">
-            {orders.length.toLocaleString("en-US")} records in the active view
+            {formatNumber(orders.length)} records in the active view
           </p>
         </div>
         <span className="text-xs font-medium text-slate-500">Select a column to sort</span>

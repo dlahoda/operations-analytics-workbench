@@ -1,12 +1,5 @@
 import type { OrderMetrics } from "@/domain/metrics";
-
-const currencyFormatter = new Intl.NumberFormat("en-US", {
-  style: "currency",
-  currency: "USD",
-  maximumFractionDigits: 0,
-});
-
-const numberFormatter = new Intl.NumberFormat("en-US");
+import { formatNumber, formatUsd } from "@/lib/formatters";
 
 type MetricCardsProps = {
   metrics: Pick<OrderMetrics, "revenue" | "orders">;
@@ -16,12 +9,12 @@ export function MetricCards({ metrics }: MetricCardsProps) {
   const cards = [
     {
       label: "Revenue",
-      value: currencyFormatter.format(metrics.revenue),
+      value: formatUsd(metrics.revenue),
       description: "Gross order value",
     },
     {
       label: "Orders",
-      value: numberFormatter.format(metrics.orders),
+      value: formatNumber(metrics.orders),
       description: "Records in active view",
     },
   ];

@@ -6,13 +6,14 @@ import {
   getPaginationRowModel,
   getSortedRowModel,
   useReactTable,
-  type ColumnDef,
   type SortingState,
 } from "@tanstack/react-table";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 
 import type { Order } from "@/domain/orders";
-import { formatNumber, formatUsd } from "@/lib/formatters";
+import { ordersTableColumns } from "@/features/orders-table/orders-table-columns";
+import { OrdersTablePagination } from "@/features/orders-table/orders-table-pagination";
+import { formatNumber } from "@/lib/formatters";
 
 type OrdersTableProps = {
   orders: Order[];
@@ -22,37 +23,11 @@ export function OrdersTable({ orders }: OrdersTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: "orderDate", desc: true },
   ]);
-  const columns = useMemo<ColumnDef<Order>[]>(
-    () => [
-      { accessorKey: "orderId", header: "Order ID" },
-      { accessorKey: "orderDate", header: "Date" },
-      { accessorKey: "region", header: "Region" },
-      { accessorKey: "category", header: "Category" },
-      { accessorKey: "status", header: "Status" },
-      {
-        accessorKey: "revenue",
-        header: "Revenue",
-        cell: ({ getValue }) => formatUsd(getValue<number>()),
-      },
-      {
-        accessorKey: "refundAmount",
-        header: "Refund",
-        cell: ({ getValue }) => formatUsd(getValue<number>()),
-      },
-      {
-        accessorKey: "margin",
-        header: "Margin",
-        cell: ({ getValue }) => formatUsd(getValue<number>()),
-      },
-      { accessorKey: "channel", header: "Channel" },
-    ],
-    [],
-  );
   // TanStack Table intentionally returns stateful callbacks that React Compiler skips.
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: orders,
-    columns,
+    columns: ordersTableColumns,
     getRowId: (order) => order.orderId,
     state: { sorting },
     onSortingChange: setSorting,
@@ -114,7 +89,10 @@ export function OrdersTable({ orders }: OrdersTableProps) {
               ))
             ) : (
               <tr>
-                <td colSpan={columns.length} className="px-5 py-12 text-center">
+                <td
+                  colSpan={ordersTableColumns.length}
+                  className="px-5 py-12 text-center"
+                >
                   <p className="font-medium text-slate-700">
                     No orders match the active filters
                   </p>
@@ -128,31 +106,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
         </table>
       </div>
 
-      <div className="flex items-center justify-between border-t border-slate-200 px-5 py-3 text-sm text-slate-600">
-        <span>
-          {hasOrders
-            ? `Page ${table.getState().pagination.pageIndex + 1} of ${table.getPageCount()}`
-            : "No pages"}
-        </span>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            className="rounded-md border border-slate-300 px-3 py-1.5 font-medium disabled:cursor-not-allowed disabled:opacity-40"
-            disabled={!table.getCanPreviousPage()}
-            onClick={() => table.previousPage()}
-          >
-            Previous
-          </button>
-          <button
-            type="button"
-            className="rounded-md border border-slate-300 px-3 py-1.5 font-medium disabled:cursor-not-allowed disabled:opacity-40"
-            disabled={!table.getCanNextPage()}
-            onClick={() => table.nextPage()}
-          >
-            Next
-          </button>
-        </div>
-      </div>
+      <OrdersTablePagination table={table} hasOrders={hasOrders} />
     </section>
   );
 }

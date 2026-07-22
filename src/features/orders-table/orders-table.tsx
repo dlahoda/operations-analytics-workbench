@@ -87,7 +87,7 @@ export function OrdersTable({ orders }: OrdersTableProps) {
                     {header.isPlaceholder ? null : (
                       <button
                         type="button"
-                        className="inline-flex items-center gap-1.5 whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+                        className="inline-flex cursor-pointer items-center gap-1.5 whitespace-nowrap outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
                         onClick={header.column.getToggleSortingHandler()}
                       >
                         {flexRender(header.column.columnDef.header, header.getContext())}

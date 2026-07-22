@@ -14,3 +14,7 @@
   and filtered-table pagination behavior.
 - Added coordinated Status filtering and an Orders by Status chart derived from
   the same active filtered dataset as the KPI cards and orders table.
+- Added inclusive From and To date filtering with dataset-derived input bounds,
+  visible validation, active-filter labels, and shared reset behavior.
+- Added a Revenue over Time chart with continuous monthly aggregation, coordinated
+  through the same active filtered dataset as KPIs, Orders by Status, and the table.

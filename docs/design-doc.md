@@ -213,13 +213,6 @@ The interface should show:
 - projected revenue impact;
 - clear delta labels.
 
-The scenario holds the baseline order count constant and uses:
-
-```text
-projectedAOV = baselineAOV × (1 + adjustment / 100)
-projectedRevenue = projectedAOV × baselineOrderCount
-```
-
 The scenario applies only to the current filtered dataset. It does not persist and does not mutate the source records.
 
 #### Explicit `v0.0.0` Non-Goals
@@ -386,11 +379,11 @@ type ScenarioState = {
 };
 ```
 
-Only one scenario adjustment is active at a time. The initial adjustment range is `-10%` to `+10%`.
+Only one scenario adjustment is active at a time.
 
 ### 8.5 Mock Data Requirements
 
-The generated dataset contains 2,500 orders and encodes intentional patterns rather than uniformly random values:
+The generated dataset encodes intentional patterns rather than uniformly random values:
 
 - a refund hotspot;
 - a regional fulfillment problem;
@@ -432,7 +425,7 @@ projectedAOV = baselineAOV × (1 + adjustment / 100)
 projectedRevenue = projectedAOV × baselineOrderCount
 ```
 
-The adjustment is constrained to `-10%` through `+10%`. Scenario calculations must remain explicit, testable, and outside presentation components.
+The calculation holds `baselineOrderCount` constant. Scenario calculations must remain explicit, testable, and outside presentation components.
 
 ## 10. UI Information Architecture
 

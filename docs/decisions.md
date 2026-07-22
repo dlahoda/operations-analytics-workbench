@@ -1,6 +1,6 @@
 # Decision Record
 
-This file records durable product and architecture decisions already established for the Operations Analytics Workbench. Unresolved choices remain in `./docs/design-doc.md`.
+This file records durable product and architecture decisions already established for the Operations Analytics Workbench. Deferred and unresolved items belong in `./docs/backlog.md`.
 
 ## 001 — Analytics workbench, with the table as the primary surface
 

@@ -5,8 +5,11 @@ import { useMemo, useState } from "react";
 import { DEFAULT_WORKBENCH_FILTERS, filterOrders } from "@/domain/filters";
 import { calculateMetrics } from "@/domain/metrics";
 import type { Order } from "@/domain/orders";
+import { calculateOrdersByStatus } from "@/domain/orders-by-status";
+import { OrdersByStatusChart } from "@/features/charts/orders-by-status-chart";
 import { CategoryFilter } from "@/features/filters/category-filter";
 import { RegionFilter } from "@/features/filters/region-filter";
+import { StatusFilter } from "@/features/filters/status-filter";
 import { MetricCards } from "@/features/metrics/metric-cards";
 import { OrdersTable } from "@/features/orders-table/orders-table";
 
@@ -21,7 +24,14 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
     [filters, initialOrders],
   );
   const metrics = useMemo(() => calculateMetrics(filteredOrders), [filteredOrders]);
-  const hasActiveFilters = filters.region !== null || filters.category !== null;
+  const ordersByStatus = useMemo(
+    () => calculateOrdersByStatus(filteredOrders),
+    [filteredOrders],
+  );
+  const hasActiveFilters =
+    filters.region !== null ||
+    filters.category !== null ||
+    filters.status !== null;
 
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950">
@@ -58,6 +68,10 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
                 setFilters((current) => ({ ...current, category }))
               }
             />
+            <StatusFilter
+              value={filters.status}
+              onChange={(status) => setFilters((current) => ({ ...current, status }))}
+            />
           </div>
 
           {hasActiveFilters ? (
@@ -73,6 +87,11 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
               {filters.category ? (
                 <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800">
                   Category: {filters.category}
+                </span>
+              ) : null}
+              {filters.status ? (
+                <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-800">
+                  Status: {filters.status}
                 </span>
               ) : null}
               <button
@@ -91,6 +110,10 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
         </section>
 
         <MetricCards metrics={metrics} />
+        <OrdersByStatusChart
+          data={ordersByStatus}
+          hasOrders={filteredOrders.length > 0}
+        />
         <OrdersTable orders={filteredOrders} />
       </div>
     </main>

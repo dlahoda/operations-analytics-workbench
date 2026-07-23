@@ -17,9 +17,15 @@ import { formatNumber } from "@/lib/formatters";
 
 type OrdersTableProps = {
   orders: Order[];
+  selectedOrderId: string | null;
+  onOrderSelect: (order: Order) => void;
 };
 
-export function OrdersTable({ orders }: OrdersTableProps) {
+export function OrdersTable({
+  orders,
+  selectedOrderId,
+  onOrderSelect,
+}: OrdersTableProps) {
   const [sorting, setSorting] = useState<SortingState>([
     { id: "orderDate", desc: true },
   ]);
@@ -78,15 +84,35 @@ export function OrdersTable({ orders }: OrdersTableProps) {
           </thead>
           <tbody className="divide-y divide-slate-100">
             {hasOrders ? (
-              table.getRowModel().rows.map((row) => (
-                <tr key={row.id} className="text-slate-700 transition hover:bg-blue-50/50">
-                  {row.getVisibleCells().map((cell) => (
-                    <td key={cell.id} className="whitespace-nowrap px-4 py-3">
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </td>
-                  ))}
-                </tr>
-              ))
+              table.getRowModel().rows.map((row) => {
+                const isSelected = row.original.orderId === selectedOrderId;
+
+                return (
+                  <tr
+                    key={row.id}
+                    tabIndex={0}
+                    aria-selected={isSelected}
+                    className={`cursor-pointer text-slate-700 transition outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-blue-600 ${
+                      isSelected
+                        ? "bg-blue-100 text-slate-950 hover:bg-blue-100"
+                        : "hover:bg-blue-50/50"
+                    }`}
+                    onClick={() => onOrderSelect(row.original)}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        onOrderSelect(row.original);
+                      }
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <td key={cell.id} className="whitespace-nowrap px-4 py-3">
+                        {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })
             ) : (
               <tr>
                 <td

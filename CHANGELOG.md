@@ -20,3 +20,5 @@
   through the same active filtered dataset as KPIs, Orders by Status, and the table.
 - Added predefined saved views that replace the complete filter state, show custom
   state after manual filter changes, and reset to Default Overview.
+- Added accessible mouse and keyboard order selection with selected-row styling and
+  a responsive detail drawer containing order data and an activity timeline.

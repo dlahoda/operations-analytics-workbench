@@ -18,3 +18,5 @@
   visible validation, active-filter labels, and shared reset behavior.
 - Added a Revenue over Time chart with continuous monthly aggregation, coordinated
   through the same active filtered dataset as KPIs, Orders by Status, and the table.
+- Added predefined saved views that replace the complete filter state, show custom
+  state after manual filter changes, and reset to Default Overview.

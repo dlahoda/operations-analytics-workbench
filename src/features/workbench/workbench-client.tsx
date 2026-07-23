@@ -3,7 +3,6 @@
 import { useCallback, useMemo, useState } from "react";
 
 import {
-  DEFAULT_WORKBENCH_FILTERS,
   filterOrders,
   getOrderDateBounds,
   hasInvalidDateRange,
@@ -12,11 +11,6 @@ import { calculateMetrics } from "@/domain/metrics";
 import type { Order } from "@/domain/orders";
 import { calculateOrdersByStatus } from "@/domain/orders-by-status";
 import { calculateRevenueByMonth } from "@/domain/revenue-by-month";
-import {
-  DEFAULT_SAVED_VIEW_ID,
-  getSavedView,
-  type SavedViewId,
-} from "@/domain/saved-views";
 import {
   calculateAovScenario,
   DEFAULT_AOV_ADJUSTMENT,
@@ -28,6 +22,7 @@ import { OrderDetailDrawer } from "@/features/order-details/order-detail-drawer"
 import { OrdersTable } from "@/features/orders-table/orders-table";
 import { SavedViewSwitcher } from "@/features/saved-views/saved-view-switcher";
 import { ScenarioPanel } from "@/features/scenario-mode/scenario-panel";
+import { useWorkbenchViewState } from "@/features/workbench/use-workbench-view-state";
 import { WorkbenchFiltersPanel } from "@/features/workbench/workbench-filters-panel";
 
 type WorkbenchClientProps = {
@@ -35,9 +30,19 @@ type WorkbenchClientProps = {
 };
 
 export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
-  const [filters, setFilters] = useState(DEFAULT_WORKBENCH_FILTERS);
-  const [activeSavedViewId, setActiveSavedViewId] =
-    useState<SavedViewId | null>(DEFAULT_SAVED_VIEW_ID);
+  const {
+    filters,
+    activeSavedViewId,
+    activeViewName,
+    hasActiveFilters,
+    applySavedView,
+    updateDateFrom,
+    updateDateTo,
+    updateRegion,
+    updateCategory,
+    updateStatus,
+    resetFilters,
+  } = useWorkbenchViewState();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isScenarioModeEnabled, setIsScenarioModeEnabled] = useState(false);
   const [aovAdjustment, setAovAdjustment] = useState(DEFAULT_AOV_ADJUSTMENT);
@@ -60,35 +65,6 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
     () => calculateRevenueByMonth(filteredOrders),
     [filteredOrders],
   );
-  const hasActiveFilters =
-    filters.dateFrom !== null ||
-    filters.dateTo !== null ||
-    filters.region !== null ||
-    filters.category !== null ||
-    filters.status !== null;
-  const activeViewName =
-    activeSavedViewId === null
-      ? "Custom view"
-      : getSavedView(activeSavedViewId).name;
-
-  function applySavedView(savedViewId: SavedViewId) {
-    const savedView = getSavedView(savedViewId);
-    setFilters({ ...savedView.filters });
-    setActiveSavedViewId(savedViewId);
-  }
-
-  function updateFilters(
-    update: (current: typeof filters) => typeof filters,
-  ) {
-    setFilters(update);
-    setActiveSavedViewId(null);
-  }
-
-  function resetFilters() {
-    setFilters({ ...DEFAULT_WORKBENCH_FILTERS });
-    setActiveSavedViewId(DEFAULT_SAVED_VIEW_ID);
-  }
-
   function toggleScenarioMode() {
     if (isScenarioModeEnabled) {
       setAovAdjustment(DEFAULT_AOV_ADJUSTMENT);
@@ -145,21 +121,11 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
             dateBounds={dateBounds}
             hasActiveFilters={hasActiveFilters}
             hasInvalidDates={hasInvalidDates}
-            onDateFromChange={(dateFrom) =>
-              updateFilters((current) => ({ ...current, dateFrom }))
-            }
-            onDateToChange={(dateTo) =>
-              updateFilters((current) => ({ ...current, dateTo }))
-            }
-            onRegionChange={(region) =>
-              updateFilters((current) => ({ ...current, region }))
-            }
-            onCategoryChange={(category) =>
-              updateFilters((current) => ({ ...current, category }))
-            }
-            onStatusChange={(status) =>
-              updateFilters((current) => ({ ...current, status }))
-            }
+            onDateFromChange={updateDateFrom}
+            onDateToChange={updateDateTo}
+            onRegionChange={updateRegion}
+            onCategoryChange={updateCategory}
+            onStatusChange={updateStatus}
             onReset={resetFilters}
           />
 

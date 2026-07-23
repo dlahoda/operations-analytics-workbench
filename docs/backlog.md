@@ -7,8 +7,7 @@ Items here are deferred beyond the active `v0.0.0` prototype or still require a 
 - Add search across useful order fields.
 - Add basic column visibility or configuration.
 - Let users save the current filters and table configuration as a named local view.
-- Persist custom local views in browser storage and support resetting to the default view.
-- Add a short activity timeline to order details.
+- Persist custom local views in browser storage.
 - Let users choose one supported scenario type while retaining a single active adjustment.
 - Normalize the Orders by Status chart to show each status as a percentage of the active filtered dataset on a fixed 0–100% scale, while retaining absolute order counts in labels or tooltips.
 

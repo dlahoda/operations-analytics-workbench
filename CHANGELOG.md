@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### Changed
+
+- Extracted filter and saved-view coordination from the workbench client into a
+  focused view-state hook without changing visible behavior.
+- Updated project documentation to describe the completed `v0.0.0` prototype
+  and removed completed work from the backlog.
+
 ### Added
 
 - Initial Next.js application.

@@ -8,13 +8,17 @@ import {
   useReactTable,
   type SortingState,
   type Updater,
+  type VisibilityState,
 } from "@tanstack/react-table";
 
 import type { Order } from "@/domain/orders";
 import {
   isOrderColumnId,
+  ORDER_COLUMN_IDS,
+  type OrderColumnId,
   type WorkbenchSort,
 } from "@/domain/workbench-view-config";
+import { OrdersTableColumnControl } from "@/features/orders-table/orders-table-column-control";
 import { ordersTableColumns } from "@/features/orders-table/orders-table-columns";
 import { OrdersTablePagination } from "@/features/orders-table/orders-table-pagination";
 import { formatNumber } from "@/lib/formatters";
@@ -22,16 +26,20 @@ import { formatNumber } from "@/lib/formatters";
 type OrdersTableProps = {
   orders: Order[];
   sorting: WorkbenchSort[];
+  visibleColumns: OrderColumnId[];
   selectedOrderId: string | null;
   onSortingChange: (sorting: WorkbenchSort[]) => void;
+  onVisibleColumnsChange: (visibleColumns: OrderColumnId[]) => void;
   onOrderSelect: (order: Order) => void;
 };
 
 export function OrdersTable({
   orders,
   sorting,
+  visibleColumns,
   selectedOrderId,
   onSortingChange,
+  onVisibleColumnsChange,
   onOrderSelect,
 }: OrdersTableProps) {
   function handleSortingChange(updater: Updater<SortingState>) {
@@ -46,14 +54,33 @@ export function OrdersTable({
       ),
     );
   }
+  const columnVisibility = Object.fromEntries(
+    ORDER_COLUMN_IDS.map((columnId) => [
+      columnId,
+      visibleColumns.includes(columnId),
+    ]),
+  );
+
+  function handleColumnVisibilityChange(updater: Updater<VisibilityState>) {
+    const nextVisibility =
+      typeof updater === "function" ? updater(columnVisibility) : updater;
+
+    onVisibleColumnsChange(
+      ORDER_COLUMN_IDS.filter(
+        (columnId) =>
+          columnId === "orderId" || nextVisibility[columnId] !== false,
+      ),
+    );
+  }
   // TanStack Table intentionally returns stateful callbacks that React Compiler skips.
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
     data: orders,
     columns: ordersTableColumns,
     getRowId: (order) => order.orderId,
-    state: { sorting },
+    state: { sorting, columnVisibility },
     onSortingChange: handleSortingChange,
+    onColumnVisibilityChange: handleColumnVisibilityChange,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -65,14 +92,22 @@ export function OrdersTable({
 
   return (
     <section className="overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm">
-      <div className="flex items-center justify-between border-b border-slate-200 px-5 py-4">
+      <div className="flex items-center justify-between gap-4 border-b border-slate-200 px-5 py-4">
         <div>
           <h2 className="font-semibold text-slate-950">Orders</h2>
           <p className="mt-1 text-xs text-slate-500">
             {formatNumber(orders.length)} records in the active view
           </p>
         </div>
-        <span className="text-xs font-medium text-slate-500">Select a column to sort</span>
+        <div className="flex items-center gap-3">
+          <span className="hidden text-xs font-medium text-slate-500 sm:inline">
+            Select a column to sort
+          </span>
+          <OrdersTableColumnControl
+            visibleColumns={visibleColumns}
+            onVisibleColumnsChange={onVisibleColumnsChange}
+          />
+        </div>
       </div>
 
       <div className="overflow-x-auto">
@@ -133,7 +168,7 @@ export function OrdersTable({
             ) : (
               <tr>
                 <td
-                  colSpan={ordersTableColumns.length}
+                  colSpan={table.getVisibleLeafColumns().length}
                   className="px-5 py-12 text-center"
                 >
                   <p className="font-medium text-slate-700">

@@ -44,6 +44,7 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
     updateStatus,
     updateSearchQuery,
     updateSorting,
+    updateVisibleColumns,
     resetView,
   } = useWorkbenchViewState();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
@@ -161,8 +162,10 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
           <OrdersTable
             orders={activeOrders}
             sorting={viewConfig.sorting}
+            visibleColumns={viewConfig.visibleColumns}
             selectedOrderId={selectedOrder?.orderId ?? null}
             onSortingChange={updateSorting}
+            onVisibleColumnsChange={updateVisibleColumns}
             onOrderSelect={setSelectedOrder}
           />
         </div>

@@ -11,6 +11,7 @@ import {
 } from "@/domain/saved-views";
 import {
   createWorkbenchViewConfig,
+  type OrderColumnId,
   type WorkbenchSort,
   type WorkbenchViewConfig,
 } from "@/domain/workbench-view-config";
@@ -80,6 +81,14 @@ export function useWorkbenchViewState() {
     setActiveSavedViewId(null);
   }
 
+  function updateVisibleColumns(visibleColumns: OrderColumnId[]) {
+    setViewConfig((current) => ({
+      ...current,
+      visibleColumns: [...visibleColumns],
+    }));
+    setActiveSavedViewId(null);
+  }
+
   function resetView() {
     setViewConfig(
       createWorkbenchViewConfig(getSavedView(DEFAULT_SAVED_VIEW_ID).config),
@@ -101,6 +110,7 @@ export function useWorkbenchViewState() {
     updateStatus,
     updateSearchQuery,
     updateSorting,
+    updateVisibleColumns,
     resetView,
   };
 }

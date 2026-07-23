@@ -71,3 +71,10 @@ This file records durable product and architecture decisions already established
 - **Decision:** Generate 2,500 orders with a refund hotspot, a regional fulfillment problem, a high-volume low-AOV segment, and a mixed anomaly where a strong-revenue segment also has elevated refunds.
 - **Rationale:** A fixed, intentionally patterned dataset supports credible recurring operational questions and coherent analytical stories.
 - **Consequences:** Saved views, filters, KPIs, charts, and table records should expose these patterns rather than relying on uniformly random data.
+
+## 011 — WorkbenchViewConfig is the canonical restorable view state
+
+- **Status:** Accepted
+- **Decision:** Use the framework-independent, JSON-serializable `WorkbenchViewConfig` as the canonical representation of restorable workbench analytical and table state. It contains filters, search query, supported-column sorting, and visible columns.
+- **Rationale:** One explicit contract keeps predefined and future custom saved views complete and portable without coupling durable product state to TanStack Table or React.
+- **Consequences:** Filters and search determine the shared active dataset used by KPIs, charts, the table, and Scenario Mode baseline calculations. Sorting and column visibility configure table presentation only. Predefined views resolve a complete config, and future custom saved views will use the same contract. Transient state such as selected orders, drawer state, pagination, and Scenario Mode remains outside the config.

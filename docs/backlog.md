@@ -1,11 +1,14 @@
 # Backlog
 
-Items here are deferred beyond the active `v0.0.0` prototype or still require a decision.
+Items here are deferred beyond the active `v0.1.0` package or still require a decision.
 
-## Next milestone
+## Completed in the first `v0.1.0` package
 
-- Add search across useful order fields.
-- Add basic column visibility or configuration.
+- Search across useful order fields.
+- Basic column visibility.
+
+## Deferred `v0.1.0` work
+
 - Let users save the current filters and table configuration as a named local view.
 - Persist custom local views in browser storage.
 - Let users choose one supported scenario type while retaining a single active adjustment.

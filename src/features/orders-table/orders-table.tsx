@@ -7,28 +7,45 @@ import {
   getSortedRowModel,
   useReactTable,
   type SortingState,
+  type Updater,
 } from "@tanstack/react-table";
-import { useState } from "react";
 
 import type { Order } from "@/domain/orders";
+import {
+  isOrderColumnId,
+  type WorkbenchSort,
+} from "@/domain/workbench-view-config";
 import { ordersTableColumns } from "@/features/orders-table/orders-table-columns";
 import { OrdersTablePagination } from "@/features/orders-table/orders-table-pagination";
 import { formatNumber } from "@/lib/formatters";
 
 type OrdersTableProps = {
   orders: Order[];
+  sorting: WorkbenchSort[];
   selectedOrderId: string | null;
+  onSortingChange: (sorting: WorkbenchSort[]) => void;
   onOrderSelect: (order: Order) => void;
 };
 
 export function OrdersTable({
   orders,
+  sorting,
   selectedOrderId,
+  onSortingChange,
   onOrderSelect,
 }: OrdersTableProps) {
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "orderDate", desc: true },
-  ]);
+  function handleSortingChange(updater: Updater<SortingState>) {
+    const nextSorting =
+      typeof updater === "function" ? updater(sorting) : updater;
+
+    onSortingChange(
+      nextSorting.flatMap((sort) =>
+        isOrderColumnId(sort.id)
+          ? [{ id: sort.id, desc: sort.desc }]
+          : [],
+      ),
+    );
+  }
   // TanStack Table intentionally returns stateful callbacks that React Compiler skips.
   // eslint-disable-next-line react-hooks/incompatible-library
   const table = useReactTable({
@@ -36,7 +53,7 @@ export function OrdersTable({
     columns: ordersTableColumns,
     getRowId: (order) => order.orderId,
     state: { sorting },
-    onSortingChange: setSorting,
+    onSortingChange: handleSortingChange,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getPaginationRowModel: getPaginationRowModel(),

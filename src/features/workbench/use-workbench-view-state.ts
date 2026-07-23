@@ -2,25 +2,27 @@
 
 import { useState } from "react";
 
-import {
-  DEFAULT_WORKBENCH_FILTERS,
-  type WorkbenchFilters,
-} from "@/domain/filters";
+import type { WorkbenchFilters } from "@/domain/filters";
 import type { Category, OrderStatus, Region } from "@/domain/orders";
 import {
   DEFAULT_SAVED_VIEW_ID,
   getSavedView,
   type SavedViewId,
 } from "@/domain/saved-views";
+import {
+  createWorkbenchViewConfig,
+  type WorkbenchSort,
+  type WorkbenchViewConfig,
+} from "@/domain/workbench-view-config";
 
 export function useWorkbenchViewState() {
-  const [filters, setFilters] = useState<WorkbenchFilters>({
-    ...DEFAULT_WORKBENCH_FILTERS,
-  });
+  const [viewConfig, setViewConfig] = useState<WorkbenchViewConfig>(() =>
+    createWorkbenchViewConfig(getSavedView(DEFAULT_SAVED_VIEW_ID).config),
+  );
   const [activeSavedViewId, setActiveSavedViewId] =
     useState<SavedViewId | null>(DEFAULT_SAVED_VIEW_ID);
 
-  const hasActiveFilters = Object.values(filters).some(
+  const hasActiveFilters = Object.values(viewConfig.filters).some(
     (filterValue) => filterValue !== null,
   );
   const activeViewName =
@@ -30,7 +32,7 @@ export function useWorkbenchViewState() {
 
   function applySavedView(savedViewId: SavedViewId) {
     const savedView = getSavedView(savedViewId);
-    setFilters({ ...savedView.filters });
+    setViewConfig(createWorkbenchViewConfig(savedView.config));
     setActiveSavedViewId(savedViewId);
   }
 
@@ -38,7 +40,10 @@ export function useWorkbenchViewState() {
     key: Key,
     value: WorkbenchFilters[Key],
   ) {
-    setFilters((current) => ({ ...current, [key]: value }));
+    setViewConfig((current) => ({
+      ...current,
+      filters: { ...current.filters, [key]: value },
+    }));
     setActiveSavedViewId(null);
   }
 
@@ -62,13 +67,24 @@ export function useWorkbenchViewState() {
     updateFilter("status", status);
   }
 
-  function resetFilters() {
-    setFilters({ ...DEFAULT_WORKBENCH_FILTERS });
+  function updateSorting(sorting: WorkbenchSort[]) {
+    setViewConfig((current) => ({
+      ...current,
+      sorting: sorting.map((sort) => ({ ...sort })),
+    }));
+    setActiveSavedViewId(null);
+  }
+
+  function resetView() {
+    setViewConfig(
+      createWorkbenchViewConfig(getSavedView(DEFAULT_SAVED_VIEW_ID).config),
+    );
     setActiveSavedViewId(DEFAULT_SAVED_VIEW_ID);
   }
 
   return {
-    filters,
+    viewConfig,
+    filters: viewConfig.filters,
     activeSavedViewId,
     activeViewName,
     hasActiveFilters,
@@ -78,6 +94,7 @@ export function useWorkbenchViewState() {
     updateRegion,
     updateCategory,
     updateStatus,
-    resetFilters,
+    updateSorting,
+    resetView,
   };
 }

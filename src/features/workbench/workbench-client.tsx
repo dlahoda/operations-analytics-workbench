@@ -31,6 +31,7 @@ type WorkbenchClientProps = {
 
 export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
   const {
+    viewConfig,
     filters,
     activeSavedViewId,
     activeViewName,
@@ -41,7 +42,8 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
     updateRegion,
     updateCategory,
     updateStatus,
-    resetFilters,
+    updateSorting,
+    resetView,
   } = useWorkbenchViewState();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isScenarioModeEnabled, setIsScenarioModeEnabled] = useState(false);
@@ -126,7 +128,7 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
             onRegionChange={updateRegion}
             onCategoryChange={updateCategory}
             onStatusChange={updateStatus}
-            onReset={resetFilters}
+            onReset={resetView}
           />
 
           {isScenarioModeEnabled ? (
@@ -150,7 +152,9 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
           </div>
           <OrdersTable
             orders={filteredOrders}
+            sorting={viewConfig.sorting}
             selectedOrderId={selectedOrder?.orderId ?? null}
+            onSortingChange={updateSorting}
             onOrderSelect={setSelectedOrder}
           />
         </div>

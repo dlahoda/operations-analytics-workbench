@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## [0.0.0] - 2026-07-23
+
 ### Changed
 
 - Extracted filter and saved-view coordination from the workbench client into a

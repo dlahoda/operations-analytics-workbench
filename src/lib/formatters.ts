@@ -24,6 +24,12 @@ const calendarMonthFormatter = new Intl.DateTimeFormat("en-US", {
   timeZone: "UTC",
 });
 
+const timestampFormatter = new Intl.DateTimeFormat("en-US", {
+  dateStyle: "medium",
+  timeStyle: "short",
+  timeZone: "UTC",
+});
+
 function parseDateKey(value: string): Date {
   const [year, month, day = "1"] = value.split("-");
   return new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
@@ -47,4 +53,8 @@ export function formatCalendarDate(value: string) {
 
 export function formatCalendarMonth(value: string) {
   return calendarMonthFormatter.format(parseDateKey(value));
+}
+
+export function formatTimestamp(value: string) {
+  return timestampFormatter.format(new Date(value));
 }

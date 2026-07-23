@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Operations Analytics Workbench
 
-## Getting Started
+A completed `v0.0.0` front-end prototype for exploring a generated dataset of
+2,500 operational orders. The table, KPI cards, and charts share one active
+filtered dataset, while Scenario Mode adds a temporary projection without
+mutating source records.
 
-First, run the development server:
+## Main features
+
+- Predefined operational saved views and coordinated date, region, category,
+  and status filters
+- Revenue, order count, refund rate, and average order value KPIs
+- Revenue-over-time and orders-by-status charts
+- Sortable, paginated orders table with accessible row selection
+- Responsive order detail drawer with financial, operational, and activity data
+- Temporary Average Order Value scenario with baseline and projected impact
+- Empty-result and invalid-date-range handling
+
+## Stack
+
+- Next.js App Router
+- React and strict TypeScript
+- Tailwind CSS
+- TanStack Table
+- Recharts
+- Generated local mock data; no backend, database, or authentication
+
+## Setup
+
+Install dependencies and start the development server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000/workbench](http://localhost:3000/workbench).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Validation
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+npm run lint
+npm run build
+```

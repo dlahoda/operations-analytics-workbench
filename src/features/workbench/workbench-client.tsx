@@ -12,10 +12,16 @@ import { calculateMetrics } from "@/domain/metrics";
 import type { Order } from "@/domain/orders";
 import { calculateOrdersByStatus } from "@/domain/orders-by-status";
 import { calculateRevenueByMonth } from "@/domain/revenue-by-month";
+import {
+  DEFAULT_SAVED_VIEW_ID,
+  getSavedView,
+  type SavedViewId,
+} from "@/domain/saved-views";
 import { OrdersByStatusChart } from "@/features/charts/orders-by-status-chart";
 import { RevenueOverTimeChart } from "@/features/charts/revenue-over-time-chart";
 import { MetricCards } from "@/features/metrics/metric-cards";
 import { OrdersTable } from "@/features/orders-table/orders-table";
+import { SavedViewSwitcher } from "@/features/saved-views/saved-view-switcher";
 import { WorkbenchFiltersPanel } from "@/features/workbench/workbench-filters-panel";
 
 type WorkbenchClientProps = {
@@ -24,6 +30,8 @@ type WorkbenchClientProps = {
 
 export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
   const [filters, setFilters] = useState(DEFAULT_WORKBENCH_FILTERS);
+  const [activeSavedViewId, setActiveSavedViewId] =
+    useState<SavedViewId | null>(DEFAULT_SAVED_VIEW_ID);
   const dateBounds = useMemo(() => getOrderDateBounds(initialOrders), [initialOrders]);
   const hasInvalidDates = hasInvalidDateRange(filters);
   const filteredOrders = useMemo(
@@ -46,6 +54,24 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
     filters.category !== null ||
     filters.status !== null;
 
+  function applySavedView(savedViewId: SavedViewId) {
+    const savedView = getSavedView(savedViewId);
+    setFilters({ ...savedView.filters });
+    setActiveSavedViewId(savedViewId);
+  }
+
+  function updateFilters(
+    update: (current: typeof filters) => typeof filters,
+  ) {
+    setFilters(update);
+    setActiveSavedViewId(null);
+  }
+
+  function resetFilters() {
+    setFilters({ ...DEFAULT_WORKBENCH_FILTERS });
+    setActiveSavedViewId(DEFAULT_SAVED_VIEW_ID);
+  }
+
   return (
     <main className="min-h-screen bg-slate-100 text-slate-950">
       <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-6 px-4 py-6 sm:px-6 lg:px-8">
@@ -61,9 +87,10 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
               Inspect operational performance across the active data slice.
             </p>
           </div>
-          <div className="rounded-full border border-slate-300 bg-white px-3 py-1.5 text-xs font-medium text-slate-600">
-            Default overview
-          </div>
+          <SavedViewSwitcher
+            activeSavedViewId={activeSavedViewId}
+            onChange={applySavedView}
+          />
         </header>
 
         <WorkbenchFiltersPanel
@@ -72,21 +99,21 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
           hasActiveFilters={hasActiveFilters}
           hasInvalidDates={hasInvalidDates}
           onDateFromChange={(dateFrom) =>
-            setFilters((current) => ({ ...current, dateFrom }))
+            updateFilters((current) => ({ ...current, dateFrom }))
           }
           onDateToChange={(dateTo) =>
-            setFilters((current) => ({ ...current, dateTo }))
+            updateFilters((current) => ({ ...current, dateTo }))
           }
           onRegionChange={(region) =>
-            setFilters((current) => ({ ...current, region }))
+            updateFilters((current) => ({ ...current, region }))
           }
           onCategoryChange={(category) =>
-            setFilters((current) => ({ ...current, category }))
+            updateFilters((current) => ({ ...current, category }))
           }
           onStatusChange={(status) =>
-            setFilters((current) => ({ ...current, status }))
+            updateFilters((current) => ({ ...current, status }))
           }
-          onReset={() => setFilters(DEFAULT_WORKBENCH_FILTERS)}
+          onReset={resetFilters}
         />
 
         <MetricCards metrics={metrics} />

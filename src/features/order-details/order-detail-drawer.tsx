@@ -6,6 +6,7 @@ import type { Order, OrderStatus } from "@/domain/orders";
 import {
   formatCalendarDate,
   formatNumber,
+  formatTimestamp,
   formatUsd,
 } from "@/lib/formatters";
 
@@ -21,16 +22,6 @@ const statusStyles: Record<OrderStatus, string> = {
   Delayed: "bg-orange-100 text-orange-800",
   Cancelled: "bg-rose-100 text-rose-800",
 };
-
-const timestampFormatter = new Intl.DateTimeFormat("en-US", {
-  dateStyle: "medium",
-  timeStyle: "short",
-  timeZone: "UTC",
-});
-
-function formatTimestamp(value: string) {
-  return timestampFormatter.format(new Date(value));
-}
 
 function DetailItem({ label, value }: { label: string; value: string }) {
   return (

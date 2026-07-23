@@ -22,3 +22,5 @@
   state after manual filter changes, and reset to Default Overview.
 - Added accessible mouse and keyboard order selection with selected-row styling and
   a responsive detail drawer containing order data and an activity timeline.
+- Added a temporary Average Order Value Scenario Mode for the active filtered view,
+  with baseline-to-projected revenue impact and immutable source data.

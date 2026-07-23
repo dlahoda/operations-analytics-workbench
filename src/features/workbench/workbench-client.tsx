@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 
 import {
-  filterOrders,
+  applyWorkbenchFiltersAndSearch,
   getOrderDateBounds,
   hasInvalidDateRange,
 } from "@/domain/filters";
@@ -42,6 +42,7 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
     updateRegion,
     updateCategory,
     updateStatus,
+    updateSearchQuery,
     updateSorting,
     resetView,
   } = useWorkbenchViewState();
@@ -50,22 +51,27 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
   const [aovAdjustment, setAovAdjustment] = useState(DEFAULT_AOV_ADJUSTMENT);
   const dateBounds = useMemo(() => getOrderDateBounds(initialOrders), [initialOrders]);
   const hasInvalidDates = hasInvalidDateRange(filters);
-  const filteredOrders = useMemo(
-    () => filterOrders(initialOrders, filters),
-    [filters, initialOrders],
+  const activeOrders = useMemo(
+    () =>
+      applyWorkbenchFiltersAndSearch(
+        initialOrders,
+        filters,
+        viewConfig.searchQuery,
+      ),
+    [filters, initialOrders, viewConfig.searchQuery],
   );
-  const metrics = useMemo(() => calculateMetrics(filteredOrders), [filteredOrders]);
+  const metrics = useMemo(() => calculateMetrics(activeOrders), [activeOrders]);
   const scenarioProjection = useMemo(
     () => calculateAovScenario(metrics, aovAdjustment),
     [aovAdjustment, metrics],
   );
   const ordersByStatus = useMemo(
-    () => calculateOrdersByStatus(filteredOrders),
-    [filteredOrders],
+    () => calculateOrdersByStatus(activeOrders),
+    [activeOrders],
   );
   const revenueByMonth = useMemo(
-    () => calculateRevenueByMonth(filteredOrders),
-    [filteredOrders],
+    () => calculateRevenueByMonth(activeOrders),
+    [activeOrders],
   );
   function toggleScenarioMode() {
     if (isScenarioModeEnabled) {
@@ -120,6 +126,7 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
 
           <WorkbenchFiltersPanel
             filters={filters}
+            searchQuery={viewConfig.searchQuery}
             dateBounds={dateBounds}
             hasActiveFilters={hasActiveFilters}
             hasInvalidDates={hasInvalidDates}
@@ -128,6 +135,7 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
             onRegionChange={updateRegion}
             onCategoryChange={updateCategory}
             onStatusChange={updateStatus}
+            onSearchQueryChange={updateSearchQuery}
             onReset={resetView}
           />
 
@@ -136,7 +144,7 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
               activeViewName={activeViewName}
               adjustmentPercent={aovAdjustment}
               filters={filters}
-              orderCount={filteredOrders.length}
+              orderCount={activeOrders.length}
               projection={scenarioProjection}
               onAdjustmentChange={setAovAdjustment}
             />
@@ -147,11 +155,11 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
             <RevenueOverTimeChart data={revenueByMonth} />
             <OrdersByStatusChart
               data={ordersByStatus}
-              hasOrders={filteredOrders.length > 0}
+              hasOrders={activeOrders.length > 0}
             />
           </div>
           <OrdersTable
-            orders={filteredOrders}
+            orders={activeOrders}
             sorting={viewConfig.sorting}
             selectedOrderId={selectedOrder?.orderId ?? null}
             onSortingChange={updateSorting}

@@ -75,6 +75,11 @@ export function useWorkbenchViewState() {
     setActiveSavedViewId(null);
   }
 
+  function updateSearchQuery(searchQuery: string) {
+    setViewConfig((current) => ({ ...current, searchQuery }));
+    setActiveSavedViewId(null);
+  }
+
   function resetView() {
     setViewConfig(
       createWorkbenchViewConfig(getSavedView(DEFAULT_SAVED_VIEW_ID).config),
@@ -94,6 +99,7 @@ export function useWorkbenchViewState() {
     updateRegion,
     updateCategory,
     updateStatus,
+    updateSearchQuery,
     updateSorting,
     resetView,
   };

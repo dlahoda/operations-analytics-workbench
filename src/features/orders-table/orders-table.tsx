@@ -137,10 +137,10 @@ export function OrdersTable({
                   className="px-5 py-12 text-center"
                 >
                   <p className="font-medium text-slate-700">
-                    No orders match the active filters
+                    No orders match the active filters or search
                   </p>
                   <p className="mt-1 text-sm text-slate-500">
-                    Reset the filters above to return to the full dataset.
+                    Reset the view above to return to the full dataset.
                   </p>
                 </td>
               </tr>

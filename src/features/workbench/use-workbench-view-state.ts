@@ -20,8 +20,12 @@ import {
 import { useCustomSavedViews } from "@/features/saved-views/use-custom-saved-views";
 
 export function useWorkbenchViewState() {
-  const { customSavedViews, saveCustomView, deleteCustomView } =
-    useCustomSavedViews();
+  const {
+    customSavedViews,
+    isLoaded: areCustomSavedViewsLoaded,
+    saveCustomView,
+    deleteCustomView,
+  } = useCustomSavedViews();
   const [viewConfig, setViewConfig] = useState<WorkbenchViewConfig>(() =>
     createWorkbenchViewConfig(getSavedView(DEFAULT_SAVED_VIEW_ID).config),
   );
@@ -135,6 +139,7 @@ export function useWorkbenchViewState() {
     activeSavedView,
     activeViewName,
     customSavedViews,
+    areCustomSavedViewsLoaded,
     hasActiveFilters,
     applyPredefinedView,
     applyCustomView,

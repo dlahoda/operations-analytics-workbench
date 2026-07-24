@@ -37,6 +37,7 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
     activeSavedView,
     activeViewName,
     customSavedViews,
+    areCustomSavedViewsLoaded,
     hasActiveFilters,
     applyPredefinedView,
     applyCustomView,
@@ -121,6 +122,7 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
                 <SavedViewActions
                   activeSavedView={activeSavedView}
                   customSavedViews={customSavedViews}
+                  isLoaded={areCustomSavedViewsLoaded}
                   onSave={saveCurrentView}
                   onDelete={deleteSavedCustomView}
                 />

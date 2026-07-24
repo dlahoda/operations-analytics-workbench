@@ -234,8 +234,9 @@ The scenario applies only to the current filtered dataset. It does not persist a
 
 ### 7.2 Active `v0.1.0` Package
 
-The first `v0.1.0` package makes analytical and table state one coordinated,
-serializable configuration.
+The `v0.1.0` packages make analytical and table state one coordinated,
+serializable configuration and allow that configuration to be saved locally as
+a named custom view.
 
 Included:
 
@@ -244,16 +245,28 @@ Included:
 - case-insensitive substring search across explicit useful order fields;
 - basic table column visibility with Order ID permanently visible;
 - complete predefined-view application and Default Overview reset behavior;
+- named custom saved views that clone and restore a complete
+  `WorkbenchViewConfig`;
+- grouped predefined and custom saved-view selection;
 - custom-view labeling after any manual filter, search, sorting, or visibility
-  change.
+  change;
+- deletion of custom views with confirmation;
+- validated, versioned browser local-storage persistence for the custom saved
+  view collection.
 
 Filters and search determine the shared active order collection used by KPI
 cards, charts, the table, and the Scenario Mode baseline. Sorting, pagination,
 and visible columns configure table presentation without changing that shared
 collection.
 
-Custom saved-view creation and browser persistence remain deferred. This
-package does not add local storage or saved-view CRUD.
+Saved-view identity and metadata remain outside `WorkbenchViewConfig`.
+Predefined and custom views both apply a defensive copy of a complete config.
+The local-storage payload is treated as untrusted input: unsupported versions
+return an empty collection and invalid entries are skipped.
+
+Only named custom views persist. The current active selection and any unsaved
+workbench session remain transient, so a reload may start on Default Overview
+while restoring the custom saved-view list.
 
 ### 7.3 MVP Scope
 
@@ -384,9 +397,11 @@ type SavedView = {
 ```
 
 `WorkbenchViewConfig` contains filters, search query, supported order-column
-sorting, and supported visible columns as plain serializable values. Predefined
-views resolve a complete config. Custom saved views and local persistence remain
-future MVP work.
+sorting, and supported visible columns as plain serializable values. Saved-view
+identity and metadata are separate from that config. Predefined views resolve a
+complete config, while named custom views store a cloned complete config in a
+versioned, validated browser local-storage payload. Operational records are
+never copied into a saved view.
 
 ### 8.4 Scenario State
 
@@ -629,6 +644,7 @@ The client workbench owns:
 
 - active filters;
 - active saved view;
+- named custom saved-view collection and browser persistence;
 - search query;
 - sorting;
 - visible columns;
@@ -660,12 +676,18 @@ Example:
 
 State that is temporary or purely presentational remains local:
 
+- current saved-view selection;
+- current unsaved workbench configuration;
 - drawer open or closed;
 - selected order;
 - table density;
 - temporary scenario adjustment;
 - hover state;
 - expanded UI sections.
+
+The named custom saved-view collection is a separate browser-only persistence
+boundary. It loads after client mount from one versioned local-storage key.
+Active selection and unsaved session state are not included in that payload.
 
 ### 13.6 Data Flow
 

@@ -7,6 +7,13 @@
 - Added case-insensitive search across useful order fields, coordinated with
   filters across KPIs, charts, Scenario Mode, and the orders table.
 - Added basic order-table column visibility with Order ID permanently visible.
+- Added named custom saved views for the complete active workbench
+  configuration.
+- Added custom saved-view application and confirmed deletion while preserving
+  unsaved workbench state.
+- Added versioned, validated browser persistence for custom saved views.
+- Added persistence-boundary tests for custom-view cloning, names, payload
+  validation, and unsupported values.
 
 ### Changed
 

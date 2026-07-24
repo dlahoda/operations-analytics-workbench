@@ -7,6 +7,8 @@ import type { Category, OrderStatus, Region } from "@/domain/orders";
 import {
   DEFAULT_SAVED_VIEW_ID,
   getSavedView,
+  type ActiveSavedViewRef,
+  type CustomSavedView,
   type SavedViewId,
 } from "@/domain/saved-views";
 import {
@@ -15,26 +17,61 @@ import {
   type WorkbenchSort,
   type WorkbenchViewConfig,
 } from "@/domain/workbench-view-config";
+import { useCustomSavedViews } from "@/features/saved-views/use-custom-saved-views";
 
 export function useWorkbenchViewState() {
+  const {
+    customSavedViews,
+    isLoaded: areCustomSavedViewsLoaded,
+    saveCustomView,
+    deleteCustomView,
+  } = useCustomSavedViews();
   const [viewConfig, setViewConfig] = useState<WorkbenchViewConfig>(() =>
     createWorkbenchViewConfig(getSavedView(DEFAULT_SAVED_VIEW_ID).config),
   );
-  const [activeSavedViewId, setActiveSavedViewId] =
-    useState<SavedViewId | null>(DEFAULT_SAVED_VIEW_ID);
+  const [activeSavedView, setActiveSavedView] =
+    useState<ActiveSavedViewRef>({
+      type: "predefined",
+      id: DEFAULT_SAVED_VIEW_ID,
+    });
 
   const hasActiveFilters = Object.values(viewConfig.filters).some(
     (filterValue) => filterValue !== null,
   );
-  const activeViewName =
-    activeSavedViewId === null
-      ? "Custom view"
-      : getSavedView(activeSavedViewId).name;
+  const activeViewName = getActiveViewName(
+    activeSavedView,
+    customSavedViews,
+  );
 
-  function applySavedView(savedViewId: SavedViewId) {
+  function applyPredefinedView(savedViewId: SavedViewId) {
     const savedView = getSavedView(savedViewId);
     setViewConfig(createWorkbenchViewConfig(savedView.config));
-    setActiveSavedViewId(savedViewId);
+    setActiveSavedView({ type: "predefined", id: savedViewId });
+  }
+
+  function applyCustomView(savedViewId: string) {
+    const savedView = customSavedViews.find(
+      (customView) => customView.id === savedViewId,
+    );
+
+    if (!savedView) {
+      return;
+    }
+
+    setViewConfig(createWorkbenchViewConfig(savedView.config));
+    setActiveSavedView({ type: "custom", id: savedView.id });
+  }
+
+  function saveCurrentView(name: string) {
+    const savedView = saveCustomView(name, viewConfig);
+    setActiveSavedView({ type: "custom", id: savedView.id });
+  }
+
+  function deleteSavedCustomView(savedViewId: string) {
+    deleteCustomView(savedViewId);
+    setActiveSavedView((current) =>
+      current?.type === "custom" && current.id === savedViewId ? null : current,
+    );
   }
 
   function updateFilter<Key extends keyof WorkbenchFilters>(
@@ -45,7 +82,7 @@ export function useWorkbenchViewState() {
       ...current,
       filters: { ...current.filters, [key]: value },
     }));
-    setActiveSavedViewId(null);
+    setActiveSavedView(null);
   }
 
   function updateDateFrom(dateFrom: string | null) {
@@ -73,12 +110,12 @@ export function useWorkbenchViewState() {
       ...current,
       sorting: sorting.map((sort) => ({ ...sort })),
     }));
-    setActiveSavedViewId(null);
+    setActiveSavedView(null);
   }
 
   function updateSearchQuery(searchQuery: string) {
     setViewConfig((current) => ({ ...current, searchQuery }));
-    setActiveSavedViewId(null);
+    setActiveSavedView(null);
   }
 
   function updateVisibleColumns(visibleColumns: OrderColumnId[]) {
@@ -86,23 +123,28 @@ export function useWorkbenchViewState() {
       ...current,
       visibleColumns: [...visibleColumns],
     }));
-    setActiveSavedViewId(null);
+    setActiveSavedView(null);
   }
 
   function resetView() {
     setViewConfig(
       createWorkbenchViewConfig(getSavedView(DEFAULT_SAVED_VIEW_ID).config),
     );
-    setActiveSavedViewId(DEFAULT_SAVED_VIEW_ID);
+    setActiveSavedView({ type: "predefined", id: DEFAULT_SAVED_VIEW_ID });
   }
 
   return {
     viewConfig,
     filters: viewConfig.filters,
-    activeSavedViewId,
+    activeSavedView,
     activeViewName,
+    customSavedViews,
+    areCustomSavedViewsLoaded,
     hasActiveFilters,
-    applySavedView,
+    applyPredefinedView,
+    applyCustomView,
+    saveCurrentView,
+    deleteSavedCustomView,
     updateDateFrom,
     updateDateTo,
     updateRegion,
@@ -113,4 +155,22 @@ export function useWorkbenchViewState() {
     updateVisibleColumns,
     resetView,
   };
+}
+
+function getActiveViewName(
+  activeSavedView: ActiveSavedViewRef,
+  customSavedViews: readonly CustomSavedView[],
+): string {
+  if (activeSavedView === null) {
+    return "Custom view";
+  }
+
+  if (activeSavedView.type === "predefined") {
+    return getSavedView(activeSavedView.id).name;
+  }
+
+  return (
+    customSavedViews.find((savedView) => savedView.id === activeSavedView.id)
+      ?.name ?? "Custom view"
+  );
 }

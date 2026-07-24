@@ -78,3 +78,10 @@ This file records durable product and architecture decisions already established
 - **Decision:** Use the framework-independent, JSON-serializable `WorkbenchViewConfig` as the canonical representation of restorable workbench analytical and table state. It contains filters, search query, supported-column sorting, and visible columns.
 - **Rationale:** One explicit contract keeps predefined and future custom saved views complete and portable without coupling durable product state to TanStack Table or React.
 - **Consequences:** Filters and search determine the shared active dataset used by KPIs, charts, the table, and Scenario Mode baseline calculations. Sorting and column visibility configure table presentation only. Predefined views resolve a complete config, and future custom saved views will use the same contract. Transient state such as selected orders, drawer state, pagination, and Scenario Mode remains outside the config.
+
+## 012 — Custom saved views use validated browser persistence
+
+- **Status:** Accepted
+- **Decision:** Store each named custom saved view as stable identity, user-visible metadata, and a complete cloned `WorkbenchViewConfig`. Persist only the custom saved-view collection in one versioned browser local-storage payload.
+- **Rationale:** Complete configs make predefined and custom view application consistent, while a versioned validation boundary safely supports front-end-only persistence without coupling saved views to operational data or framework state.
+- **Consequences:** Persisted payloads are treated as untrusted input. Unsupported versions produce an empty collection, invalid entries are skipped, and returned configs are defensively cloned. Operational records, active selection, unsaved session state, pagination, selection, drawer state, and Scenario Mode are not persisted.

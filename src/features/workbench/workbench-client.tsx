@@ -20,6 +20,7 @@ import { RevenueOverTimeChart } from "@/features/charts/revenue-over-time-chart"
 import { MetricCards } from "@/features/metrics/metric-cards";
 import { OrderDetailDrawer } from "@/features/order-details/order-detail-drawer";
 import { OrdersTable } from "@/features/orders-table/orders-table";
+import { SavedViewActions } from "@/features/saved-views/saved-view-actions";
 import { SavedViewSwitcher } from "@/features/saved-views/saved-view-switcher";
 import { ScenarioPanel } from "@/features/scenario-mode/scenario-panel";
 import { useWorkbenchViewState } from "@/features/workbench/use-workbench-view-state";
@@ -33,10 +34,15 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
   const {
     viewConfig,
     filters,
-    activeSavedViewId,
+    activeSavedView,
     activeViewName,
+    customSavedViews,
+    areCustomSavedViewsLoaded,
     hasActiveFilters,
-    applySavedView,
+    applyPredefinedView,
+    applyCustomView,
+    saveCurrentView,
+    deleteSavedCustomView,
     updateDateFrom,
     updateDateTo,
     updateRegion,
@@ -106,10 +112,21 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
               </p>
             </div>
             <div className="flex flex-wrap items-end gap-3">
-              <SavedViewSwitcher
-                activeSavedViewId={activeSavedViewId}
-                onChange={applySavedView}
-              />
+              <div className="flex flex-wrap items-end gap-2">
+                <SavedViewSwitcher
+                  activeSavedView={activeSavedView}
+                  customSavedViews={customSavedViews}
+                  onPredefinedViewChange={applyPredefinedView}
+                  onCustomViewChange={applyCustomView}
+                />
+                <SavedViewActions
+                  activeSavedView={activeSavedView}
+                  customSavedViews={customSavedViews}
+                  isLoaded={areCustomSavedViewsLoaded}
+                  onSave={saveCurrentView}
+                  onDelete={deleteSavedCustomView}
+                />
+              </div>
               <button
                 type="button"
                 aria-pressed={isScenarioModeEnabled}

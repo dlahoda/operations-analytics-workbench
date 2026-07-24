@@ -148,7 +148,9 @@ export function calculateGrossMarginScenario(
   const projectedMarginPercentage =
     baseline.marginPercentage + adjustmentPercentagePoints / 100;
   const projectedGrossMargin =
-    baseline.revenue * projectedMarginPercentage;
+    baseline.revenue === 0
+      ? 0
+      : baseline.revenue * projectedMarginPercentage;
   const absoluteGrossMarginDelta =
     projectedGrossMargin - baseline.grossMargin;
 

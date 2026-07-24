@@ -12,8 +12,11 @@ import type { Order } from "@/domain/orders";
 import { calculateOrdersByStatus } from "@/domain/orders-by-status";
 import { calculateRevenueByMonth } from "@/domain/revenue-by-month";
 import {
-  calculateAovScenario,
-  DEFAULT_AOV_ADJUSTMENT,
+  calculateScenarioProjection,
+  changeScenarioAdjustment,
+  changeScenarioType,
+  createScenarioState,
+  type ScenarioType,
 } from "@/domain/scenarios";
 import { OrdersByStatusChart } from "@/features/charts/orders-by-status-chart";
 import { RevenueOverTimeChart } from "@/features/charts/revenue-over-time-chart";
@@ -55,7 +58,7 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
   } = useWorkbenchViewState();
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isScenarioModeEnabled, setIsScenarioModeEnabled] = useState(false);
-  const [aovAdjustment, setAovAdjustment] = useState(DEFAULT_AOV_ADJUSTMENT);
+  const [scenario, setScenario] = useState(createScenarioState);
   const dateBounds = useMemo(() => getOrderDateBounds(initialOrders), [initialOrders]);
   const hasInvalidDates = hasInvalidDateRange(filters);
   const activeOrders = useMemo(
@@ -69,8 +72,8 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
   );
   const metrics = useMemo(() => calculateMetrics(activeOrders), [activeOrders]);
   const scenarioProjection = useMemo(
-    () => calculateAovScenario(metrics, aovAdjustment),
-    [aovAdjustment, metrics],
+    () => calculateScenarioProjection(metrics, scenario),
+    [metrics, scenario],
   );
   const ordersByStatus = useMemo(
     () => calculateOrdersByStatus(activeOrders),
@@ -82,10 +85,20 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
   );
   function toggleScenarioMode() {
     if (isScenarioModeEnabled) {
-      setAovAdjustment(DEFAULT_AOV_ADJUSTMENT);
+      setScenario(createScenarioState());
     }
 
     setIsScenarioModeEnabled(!isScenarioModeEnabled);
+  }
+
+  function updateScenarioType(type: ScenarioType) {
+    setScenario(changeScenarioType(type));
+  }
+
+  function updateScenarioAdjustment(adjustment: number) {
+    setScenario((current) =>
+      changeScenarioAdjustment(current, adjustment),
+    );
   }
 
   const closeOrderDetails = useCallback(() => {
@@ -160,11 +173,12 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
           {isScenarioModeEnabled ? (
             <ScenarioPanel
               activeViewName={activeViewName}
-              adjustmentPercent={aovAdjustment}
               filters={filters}
               orderCount={activeOrders.length}
               projection={scenarioProjection}
-              onAdjustmentChange={setAovAdjustment}
+              scenario={scenario}
+              onAdjustmentChange={updateScenarioAdjustment}
+              onScenarioTypeChange={updateScenarioType}
             />
           ) : null}
 

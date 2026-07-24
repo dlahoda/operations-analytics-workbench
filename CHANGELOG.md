@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Added
+
+- Added case-insensitive search across useful order fields, coordinated with
+  filters across KPIs, charts, Scenario Mode, and the orders table.
+- Added basic order-table column visibility with Order ID permanently visible.
+
+### Changed
+
+- Centralized filters, search, sorting, and visible columns in a serializable
+  workbench view configuration restored by predefined saved views and reset.
+
 ## [0.0.0] - 2026-07-23
 
 ### Changed

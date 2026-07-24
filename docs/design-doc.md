@@ -3,9 +3,9 @@
 *Product and Architecture Design Document*
 
 **Status:** Draft  
-**Target milestone:** `v0.0.0` prototype  
+**Target milestone:** `v0.1.0` workbench view configuration
 **Product direction:** Variant 2.5 - an operations analytics workbench with a constrained Scenario Mode  
-**Last reviewed:** July 21, 2026
+**Last reviewed:** July 23, 2026
 
 ## 1. Executive Summary
 
@@ -24,7 +24,7 @@ The core experience is an analytical workbench where a user can:
 
 The table is the center of the product. KPI cards and charts support the same analytical state rather than functioning as decorative dashboard elements.
 
-> **Core product rule:** The table, KPI cards, and charts always derive from the same active filtered dataset. Scenario Mode is a temporary projection layer on top of that baseline.
+> **Core product rule:** The table, KPI cards, and charts always derive from the same active filtered and searched dataset. Scenario Mode is a temporary projection layer on top of that baseline.
 
 ## 2. Product Goal
 
@@ -152,7 +152,7 @@ The project should prove a coherent front-end product pattern. It should not att
 
 ## 7. Scope
 
-### 7.1 `v0.0.0` Prototype Scope
+### 7.1 Completed `v0.0.0` Prototype Scope
 
 Version `0.0.0` is not the full MVP. It is the first visible vertical slice of the product.
 
@@ -232,7 +232,30 @@ The scenario applies only to the current filtered dataset. It does not persist a
 - complex table personalization;
 - server-side filtering or pagination.
 
-### 7.2 MVP Scope
+### 7.2 Active `v0.1.0` Package
+
+The first `v0.1.0` package makes analytical and table state one coordinated,
+serializable configuration.
+
+Included:
+
+- a framework-independent `WorkbenchViewConfig` containing filters, search,
+  sorting, and visible columns;
+- case-insensitive substring search across explicit useful order fields;
+- basic table column visibility with Order ID permanently visible;
+- complete predefined-view application and Default Overview reset behavior;
+- custom-view labeling after any manual filter, search, sorting, or visibility
+  change.
+
+Filters and search determine the shared active order collection used by KPI
+cards, charts, the table, and the Scenario Mode baseline. Sorting, pagination,
+and visible columns configure table presentation without changing that shared
+collection.
+
+Custom saved-view creation and browser persistence remain deferred. This
+package does not add local storage or saved-view CRUD.
+
+### 7.3 MVP Scope
 
 The MVP extends the first prototype into a small but coherent product.
 
@@ -266,7 +289,7 @@ The MVP extends the first prototype into a small but coherent product.
 - label projected values clearly;
 - preserve the raw dataset.
 
-### 7.3 Out of Scope for the MVP
+### 7.4 Out of Scope for the MVP
 
 - user accounts;
 - backend database;
@@ -282,7 +305,7 @@ The MVP extends the first prototype into a small but coherent product.
 - cross-workspace organization;
 - enterprise audit history.
 
-### 7.4 Future Expansion Awareness
+### 7.5 Future Expansion Awareness
 
 Possible future directions include:
 
@@ -356,14 +379,14 @@ Conceptual fields:
 type SavedView = {
   id: string;
   name: string;
-  filters: WorkbenchFilters;
-  sortState?: unknown;
-  visibleColumns?: string[];
-  tableDensity?: "compact" | "default" | "comfortable";
+  config: WorkbenchViewConfig;
 };
 ```
 
-For `v0.0.0`, views are predefined. Local custom view persistence belongs to the MVP.
+`WorkbenchViewConfig` contains filters, search query, supported order-column
+sorting, and supported visible columns as plain serializable values. Predefined
+views resolve a complete config. Custom saved views and local persistence remain
+future MVP work.
 
 ### 8.4 Scenario State
 
@@ -396,15 +419,19 @@ These patterns make saved views, filters, and charts tell a coherent story.
 
 ### 9.1 Baseline
 
-The baseline is calculated from the active filtered dataset.
+The baseline is calculated from the active filtered and searched dataset.
 
 The sequence is:
 
 1. load raw mock records;
 2. resolve the active saved view;
 3. apply active filters;
-4. calculate baseline metrics;
-5. feed the same records to the table and charts.
+4. apply active search;
+5. use the resulting shared active orders for baseline metrics and charts;
+6. apply table sorting and pagination for presentation.
+
+Column visibility and sorting do not alter KPI, chart, or Scenario Mode
+calculations.
 
 ### 9.2 Projection
 
@@ -602,7 +629,9 @@ The client workbench owns:
 
 - active filters;
 - active saved view;
+- search query;
 - sorting;
+- visible columns;
 - selected order;
 - detail drawer state;
 - temporary scenario state;
@@ -650,7 +679,7 @@ Server route loads initial data
 WorkbenchClient receives serializable records
     |
     v
-Active view and filters produce filteredOrders
+Active view filters and search produce activeOrders
     |
     +--> KPI calculations
     +--> charts
@@ -668,7 +697,7 @@ Projected metrics are compared with baseline metrics
 Domain functions should be framework-independent and testable:
 
 ```ts
-filterOrders(orders, filters);
+applyWorkbenchFiltersAndSearch(orders, filters, searchQuery);
 calculateMetrics(orders);
 resolveSavedView(view);
 applyScenario(metrics, scenario);

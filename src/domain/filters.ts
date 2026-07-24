@@ -21,6 +21,19 @@ export type OrderDateBounds = {
   maximum: string;
 };
 
+export const SEARCHABLE_ORDER_FIELDS = [
+  "orderId",
+  "region",
+  "country",
+  "category",
+  "subcategory",
+  "status",
+  "customerSegment",
+  "channel",
+  "refundStatus",
+  "paymentMethod",
+] as const satisfies readonly (keyof Order)[];
+
 export function hasInvalidDateRange(
   filters: Pick<WorkbenchFilters, "dateFrom" | "dateTo">,
 ): boolean {
@@ -69,4 +82,29 @@ export function filterOrders(
       (filters.status === null || order.status === filters.status)
     );
   });
+}
+
+export function searchOrders(
+  orders: readonly Order[],
+  searchQuery: string,
+): Order[] {
+  const normalizedQuery = searchQuery.trim().toLocaleLowerCase();
+
+  if (normalizedQuery === "") {
+    return [...orders];
+  }
+
+  return orders.filter((order) =>
+    SEARCHABLE_ORDER_FIELDS.some((field) =>
+      order[field].toLocaleLowerCase().includes(normalizedQuery),
+    ),
+  );
+}
+
+export function applyWorkbenchFiltersAndSearch(
+  orders: readonly Order[],
+  filters: WorkbenchFilters,
+  searchQuery: string,
+): Order[] {
+  return searchOrders(filterOrders(orders, filters), searchQuery);
 }

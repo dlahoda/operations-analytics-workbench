@@ -9,7 +9,7 @@ import {
 } from "@/domain/filters";
 import { calculateMetrics } from "@/domain/metrics";
 import type { Order } from "@/domain/orders";
-import { calculateOrdersByStatus } from "@/domain/orders-by-status";
+import { calculateRefundRateByCategory } from "@/domain/refund-rate-by-category";
 import { calculateRevenueByMonth } from "@/domain/revenue-by-month";
 import {
   calculateScenarioProjection,
@@ -18,7 +18,7 @@ import {
   createScenarioState,
   type ScenarioType,
 } from "@/domain/scenarios";
-import { OrdersByStatusChart } from "@/features/charts/orders-by-status-chart";
+import { RefundRateByCategoryChart } from "@/features/charts/refund-rate-by-category-chart";
 import { RevenueOverTimeChart } from "@/features/charts/revenue-over-time-chart";
 import { MetricCards } from "@/features/metrics/metric-cards";
 import { OrderDetailDrawer } from "@/features/order-details/order-detail-drawer";
@@ -75,8 +75,8 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
     () => calculateScenarioProjection(metrics, scenario),
     [metrics, scenario],
   );
-  const ordersByStatus = useMemo(
-    () => calculateOrdersByStatus(activeOrders),
+  const refundRateByCategory = useMemo(
+    () => calculateRefundRateByCategory(activeOrders),
     [activeOrders],
   );
   const revenueByMonth = useMemo(
@@ -185,8 +185,8 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
           <MetricCards metrics={metrics} />
           <div className="grid items-start gap-6 xl:grid-cols-2">
             <RevenueOverTimeChart data={revenueByMonth} />
-            <OrdersByStatusChart
-              data={ordersByStatus}
+            <RefundRateByCategoryChart
+              data={refundRateByCategory}
               hasOrders={activeOrders.length > 0}
             />
           </div>

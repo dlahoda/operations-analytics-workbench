@@ -8,6 +8,7 @@ import {
 type SavedViewSwitcherProps = {
   activeSavedView: ActiveSavedViewRef;
   customSavedViews: readonly CustomSavedView[];
+  isActiveCustomViewDirty: boolean;
   onPredefinedViewChange: (savedViewId: SavedViewId) => void;
   onCustomViewChange: (savedViewId: string) => void;
 };
@@ -15,6 +16,7 @@ type SavedViewSwitcherProps = {
 export function SavedViewSwitcher({
   activeSavedView,
   customSavedViews,
+  isActiveCustomViewDirty,
   onPredefinedViewChange,
   onCustomViewChange,
 }: SavedViewSwitcherProps) {
@@ -58,6 +60,11 @@ export function SavedViewSwitcher({
             {customSavedViews.map((savedView) => (
               <option key={savedView.id} value={`custom:${savedView.id}`}>
                 {savedView.name}
+                {activeSavedView?.type === "custom" &&
+                activeSavedView.id === savedView.id &&
+                isActiveCustomViewDirty
+                  ? " (modified)"
+                  : ""}
               </option>
             ))}
           </optgroup>

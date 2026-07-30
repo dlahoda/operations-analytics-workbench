@@ -5,7 +5,11 @@ import {
   parseCustomSavedViews,
   serializeCustomSavedViews,
 } from "./custom-saved-views-storage";
-import { createCustomSavedView } from "./saved-views";
+import {
+  createCustomSavedView,
+  renameCustomSavedView,
+  updateCustomSavedViewConfig,
+} from "./saved-views";
 import {
   createWorkbenchViewConfig,
   DEFAULT_WORKBENCH_VIEW_CONFIG,
@@ -157,5 +161,34 @@ describe("custom saved-view storage", () => {
     expect(
       parseCustomSavedViews(createPayload([firstView, secondView])),
     ).toEqual([firstView]);
+  });
+
+  it("round-trips renamed and updated views without changing collection order", () => {
+    const firstView = createValidView("view-1", "Europe Daily");
+    const secondView = createValidView("view-2", "APAC Daily");
+    const renamedViews = renameCustomSavedView(
+      [firstView, secondView],
+      firstView.id,
+      "Europe Review",
+    );
+    const updatedConfig = createWorkbenchViewConfig({
+      ...DEFAULT_WORKBENCH_VIEW_CONFIG,
+      searchQuery: "priority",
+      visibleColumns: ["orderId", "region", "revenue"],
+    });
+    const updatedViews = updateCustomSavedViewConfig(
+      renamedViews,
+      firstView.id,
+      updatedConfig,
+    );
+
+    const restoredViews = parseCustomSavedViews(
+      serializeCustomSavedViews(updatedViews),
+    );
+
+    expect(restoredViews.map((view) => view.id)).toEqual(["view-1", "view-2"]);
+    expect(restoredViews[0].name).toBe("Europe Review");
+    expect(restoredViews[0].config).toEqual(updatedConfig);
+    expect(restoredViews[0].config).not.toBe(updatedViews[0].config);
   });
 });

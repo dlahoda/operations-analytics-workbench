@@ -2,11 +2,18 @@ import { describe, expect, it } from "vitest";
 
 import {
   createCustomSavedView,
+  DEFAULT_SAVED_VIEW_ID,
+  getCustomSavedViewNameError,
+  getSavedViewDisplayName,
   getSavedViewNameError,
+  getSavedViewRefAfterManualChange,
   MAX_SAVED_VIEW_NAME_LENGTH,
+  renameCustomSavedView,
   SAVED_VIEWS,
+  updateCustomSavedViewConfig,
 } from "./saved-views";
 import {
+  areWorkbenchViewConfigsEqual,
   createWorkbenchViewConfig,
   DEFAULT_WORKBENCH_VIEW_CONFIG,
 } from "./workbench-view-config";
@@ -89,5 +96,160 @@ describe("custom saved views", () => {
     expect(SAVED_VIEWS[0].config.filters.region).toBeNull();
     expect(SAVED_VIEWS[0].config.sorting[0].desc).toBe(true);
     expect(SAVED_VIEWS[0].config.visibleColumns).toContain("channel");
+  });
+
+  it("renames only the target name while preserving ID, config, and order", () => {
+    const firstView = createCustomSavedView(
+      "view-1",
+      "Europe Daily",
+      createWorkbenchViewConfig(),
+    );
+    const secondView = createCustomSavedView(
+      "view-2",
+      "APAC Daily",
+      createWorkbenchViewConfig(),
+    );
+
+    const renamedViews = renameCustomSavedView(
+      [firstView, secondView],
+      firstView.id,
+      "  Europe Review  ",
+    );
+
+    expect(renamedViews.map((view) => view.id)).toEqual(["view-1", "view-2"]);
+    expect(renamedViews[0]).toEqual({
+      ...firstView,
+      name: "Europe Review",
+    });
+    expect(renamedViews[0].config).toBe(firstView.config);
+    expect(renamedViews[1]).toBe(secondView);
+  });
+
+  it("allows an unchanged own name but rejects invalid and duplicate renames", () => {
+    const views = [
+      createCustomSavedView(
+        "view-1",
+        "Europe Daily",
+        createWorkbenchViewConfig(),
+      ),
+      createCustomSavedView(
+        "view-2",
+        "APAC Daily",
+        createWorkbenchViewConfig(),
+      ),
+    ];
+
+    expect(
+      getCustomSavedViewNameError(" EUROPE DAILY ", views, "view-1"),
+    ).toBeNull();
+    expect(
+      getCustomSavedViewNameError("apac daily", views, "view-1"),
+    ).toBe("A saved view with this name already exists.");
+    expect(
+      getCustomSavedViewNameError("default overview", views, "view-1"),
+    ).toBe("A saved view with this name already exists.");
+    expect(getCustomSavedViewNameError("   ", views, "view-1")).toBe(
+      "Enter a name for this view.",
+    );
+    expect(() =>
+      renameCustomSavedView(views, "view-1", "APAC DAILY"),
+    ).toThrow("A saved view with this name already exists.");
+  });
+
+  it("updates only the target config with a defensive clone", () => {
+    const firstView = createCustomSavedView(
+      "view-1",
+      "Europe Daily",
+      createWorkbenchViewConfig(),
+    );
+    const secondView = createCustomSavedView(
+      "view-2",
+      "APAC Daily",
+      createWorkbenchViewConfig(),
+    );
+    const updatedConfig = createWorkbenchViewConfig({
+      ...DEFAULT_WORKBENCH_VIEW_CONFIG,
+      filters: {
+        ...DEFAULT_WORKBENCH_VIEW_CONFIG.filters,
+        region: "Europe",
+      },
+      searchQuery: "priority",
+    });
+
+    const updatedViews = updateCustomSavedViewConfig(
+      [firstView, secondView],
+      firstView.id,
+      updatedConfig,
+    );
+
+    expect(updatedViews.map((view) => view.id)).toEqual(["view-1", "view-2"]);
+    expect(updatedViews[0].id).toBe(firstView.id);
+    expect(updatedViews[0].name).toBe(firstView.name);
+    expect(updatedViews[0].config).toEqual(updatedConfig);
+    expect(updatedViews[0].config).not.toBe(updatedConfig);
+    expect(updatedViews[0].config.filters).not.toBe(updatedConfig.filters);
+    expect(updatedViews[1]).toBe(secondView);
+
+    updatedConfig.filters.region = "APAC";
+    expect(updatedViews[0].config.filters.region).toBe("Europe");
+  });
+
+  it("compares complete configs for update dirty state", () => {
+    const storedConfig = createWorkbenchViewConfig();
+    const currentConfig = createWorkbenchViewConfig(storedConfig);
+
+    expect(areWorkbenchViewConfigsEqual(currentConfig, storedConfig)).toBe(true);
+
+    currentConfig.visibleColumns = currentConfig.visibleColumns.slice(0, -1);
+    expect(areWorkbenchViewConfigsEqual(currentConfig, storedConfig)).toBe(
+      false,
+    );
+  });
+
+  it("retains custom selection after manual changes but clears predefined selection", () => {
+    const customSelection = { type: "custom" as const, id: "view-1" };
+    const predefinedSelection = {
+      type: "predefined" as const,
+      id: DEFAULT_SAVED_VIEW_ID,
+    };
+
+    expect(getSavedViewRefAfterManualChange(customSelection)).toBe(
+      customSelection,
+    );
+    expect(getSavedViewRefAfterManualChange(predefinedSelection)).toBeNull();
+    expect(getSavedViewRefAfterManualChange(null)).toBeNull();
+  });
+
+  it("marks only a dirty selected custom view as modified", () => {
+    const customView = createCustomSavedView(
+      "view-1",
+      "Europe Daily",
+      createWorkbenchViewConfig(),
+    );
+
+    expect(
+      getSavedViewDisplayName(
+        { type: "custom", id: customView.id },
+        [customView],
+        false,
+      ),
+    ).toBe("Europe Daily");
+    expect(
+      getSavedViewDisplayName(
+        { type: "custom", id: customView.id },
+        [customView],
+        true,
+      ),
+    ).toBe("Europe Daily (modified)");
+    expect(
+      getSavedViewDisplayName(
+        { type: "predefined", id: DEFAULT_SAVED_VIEW_ID },
+        [customView],
+        true,
+      ),
+    ).toBe("Default Overview");
+    expect(getSavedViewDisplayName(null, [customView], true)).toBe(
+      "Custom view",
+    );
   });
 });

@@ -109,6 +109,38 @@ export function getSavedView(savedViewId: SavedViewId): SavedView {
   return savedView;
 }
 
+export function getSavedViewRefAfterManualChange(
+  activeSavedView: ActiveSavedViewRef,
+): ActiveSavedViewRef {
+  return activeSavedView?.type === "custom" ? activeSavedView : null;
+}
+
+export function getSavedViewDisplayName(
+  activeSavedView: ActiveSavedViewRef,
+  customSavedViews: readonly CustomSavedView[],
+  isActiveCustomViewDirty = false,
+): string {
+  if (activeSavedView === null) {
+    return "Custom view";
+  }
+
+  if (activeSavedView.type === "predefined") {
+    return getSavedView(activeSavedView.id).name;
+  }
+
+  const customView = customSavedViews.find(
+    (savedView) => savedView.id === activeSavedView.id,
+  );
+
+  if (!customView) {
+    return "Custom view";
+  }
+
+  return isActiveCustomViewDirty
+    ? `${customView.name} (modified)`
+    : customView.name;
+}
+
 export function getSavedViewNameError(
   name: string,
   existingNames: readonly string[] = [],
@@ -159,6 +191,52 @@ export function createCustomSavedView(
     name: normalizedName,
     config: createWorkbenchViewConfig(config),
   };
+}
+
+export function getCustomSavedViewNameError(
+  name: string,
+  customSavedViews: readonly CustomSavedView[],
+  currentViewId?: string,
+): string | null {
+  return getSavedViewNameError(name, [
+    ...SAVED_VIEWS.map((view) => view.name),
+    ...customSavedViews
+      .filter((view) => view.id !== currentViewId)
+      .map((view) => view.name),
+  ]);
+}
+
+export function renameCustomSavedView(
+  customSavedViews: readonly CustomSavedView[],
+  id: string,
+  name: string,
+): CustomSavedView[] {
+  const normalizedName = name.trim();
+  const nameError = getCustomSavedViewNameError(
+    normalizedName,
+    customSavedViews,
+    id,
+  );
+
+  if (nameError) {
+    throw new Error(nameError);
+  }
+
+  return customSavedViews.map((savedView) =>
+    savedView.id === id ? { ...savedView, name: normalizedName } : savedView,
+  );
+}
+
+export function updateCustomSavedViewConfig(
+  customSavedViews: readonly CustomSavedView[],
+  id: string,
+  config: WorkbenchViewConfig,
+): CustomSavedView[] {
+  return customSavedViews.map((savedView) =>
+    savedView.id === id
+      ? { ...savedView, config: createWorkbenchViewConfig(config) }
+      : savedView,
+  );
 }
 
 export function cloneCustomSavedView(

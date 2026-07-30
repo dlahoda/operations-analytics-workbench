@@ -92,3 +92,18 @@ This file records durable product and architecture decisions already established
 - **Decision:** Represent Scenario Mode with an explicit typed state containing one supported scenario type and one numeric adjustment. Exactly one scenario is active at a time, and changing its type resets the adjustment to that type's neutral value.
 - **Rationale:** A small discriminated model keeps Average Order Value and Gross Margin projections readable and extensible without introducing a generic configuration engine or presentation-layer formulas.
 - **Consequences:** Scenario constraints and calculations remain pure and framework-independent. Scenario enablement, type, and adjustment are transient workbench composition state and are excluded from `WorkbenchViewConfig`, predefined and custom saved views, URL state, and local-storage persistence.
+
+## 014 — Selected custom-view identity is distinct from dirty state
+
+- **Status:** Accepted
+- **Decision:** Keep a custom saved view selected through manual workbench
+  changes and track config dirty state separately from selected-view identity.
+- **Rationale:** The selected view must remain visible when an enabled save
+  action targets it; dirty state communicates that its stored config differs
+  from the current workbench config.
+- **Consequences:** Dirty selected custom views display “(modified)” and allow
+  Save changes. Saving removes the marker and disables the action. Manual
+  changes from a predefined view clear that selection and display the unsaved
+  “Custom view” state because predefined views cannot be overwritten. Applying
+  another view, resetting, saving a new custom view, or deleting the selected
+  custom view updates or clears selection normally. Selection is not persisted.

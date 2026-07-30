@@ -3,56 +3,91 @@
 import { useState } from "react";
 
 import {
+  getCustomSavedViewNameError,
   getSavedViewNameError,
   SAVED_VIEWS,
-  type ActiveSavedViewRef,
   type CustomSavedView,
 } from "@/domain/saved-views";
 
 type SavedViewActionsProps = {
-  activeSavedView: ActiveSavedViewRef;
+  selectedCustomViewId: string | null;
   customSavedViews: readonly CustomSavedView[];
+  canSaveChanges: boolean;
   isLoaded?: boolean;
   onSave: (name: string) => void;
+  onRename: (id: string, name: string) => void;
+  onSaveChanges: (id: string) => void;
   onDelete: (id: string) => void;
 };
 
 export function SavedViewActions({
-  activeSavedView,
+  selectedCustomViewId,
   customSavedViews,
+  canSaveChanges,
   isLoaded = true,
   onSave,
+  onRename,
+  onSaveChanges,
   onDelete,
 }: SavedViewActionsProps) {
   const [isSaveFormOpen, setIsSaveFormOpen] = useState(false);
-  const [name, setName] = useState("");
-  const [nameError, setNameError] = useState<string | null>(null);
+  const [saveName, setSaveName] = useState("");
+  const [saveNameError, setSaveNameError] = useState<string | null>(null);
+  const [isRenameFormOpen, setIsRenameFormOpen] = useState(false);
+  const [renameName, setRenameName] = useState("");
+  const [renameNameError, setRenameNameError] = useState<string | null>(null);
+  const [isUpdateConfirmationOpen, setIsUpdateConfirmationOpen] =
+    useState(false);
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false);
-  const activeCustomView =
-    activeSavedView?.type === "custom"
-      ? customSavedViews.find((view) => view.id === activeSavedView.id) ?? null
-      : null;
+  const selectedCustomView =
+    customSavedViews.find((view) => view.id === selectedCustomViewId) ?? null;
 
   function closeSaveForm() {
     setIsSaveFormOpen(false);
-    setName("");
-    setNameError(null);
+    setSaveName("");
+    setSaveNameError(null);
   }
 
   function handleSave() {
-    const error = getSavedViewNameError(name, [
+    const error = getSavedViewNameError(saveName, [
       ...SAVED_VIEWS.map((view) => view.name),
       ...customSavedViews.map((view) => view.name),
     ]);
 
     if (error) {
-      setNameError(error);
+      setSaveNameError(error);
       return;
     }
 
-    onSave(name);
+    onSave(saveName);
     closeSaveForm();
+  }
+
+  function closeRenameForm() {
+    setIsRenameFormOpen(false);
+    setRenameName("");
+    setRenameNameError(null);
+  }
+
+  function handleRename() {
+    if (!selectedCustomView) {
+      return;
+    }
+
+    const error = getCustomSavedViewNameError(
+      renameName,
+      customSavedViews,
+      selectedCustomView.id,
+    );
+
+    if (error) {
+      setRenameNameError(error);
+      return;
+    }
+
+    onRename(selectedCustomView.id, renameName);
+    closeRenameForm();
   }
 
   if (isSaveFormOpen) {
@@ -63,13 +98,15 @@ export function SavedViewActions({
           <input
             type="text"
             autoFocus
-            aria-invalid={nameError ? true : undefined}
-            aria-describedby={nameError ? "saved-view-name-error" : undefined}
+            aria-invalid={saveNameError ? true : undefined}
+            aria-describedby={
+              saveNameError ? "saved-view-name-error" : undefined
+            }
             className="h-10 min-w-56 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
-            value={name}
+            value={saveName}
             onChange={(event) => {
-              setName(event.target.value);
-              setNameError(null);
+              setSaveName(event.target.value);
+              setSaveNameError(null);
             }}
             onKeyDown={(event) => {
               if (event.key === "Enter") {
@@ -81,9 +118,9 @@ export function SavedViewActions({
               }
             }}
           />
-          {nameError ? (
+          {saveNameError ? (
             <span id="saved-view-name-error" className="text-red-700">
-              {nameError}
+              {saveNameError}
             </span>
           ) : null}
         </label>
@@ -105,17 +142,97 @@ export function SavedViewActions({
     );
   }
 
-  if (isDeleteConfirmationOpen && activeCustomView) {
+  if (isRenameFormOpen && selectedCustomView) {
+    return (
+      <div className="flex flex-wrap items-end gap-2">
+        <label className="flex flex-col gap-1 text-xs font-medium text-slate-600">
+          <span>View name</span>
+          <input
+            type="text"
+            autoFocus
+            aria-invalid={renameNameError ? true : undefined}
+            aria-describedby={
+              renameNameError ? "renamed-view-name-error" : undefined
+            }
+            className="h-10 min-w-56 rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-900 shadow-sm outline-none transition focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+            value={renameName}
+            onChange={(event) => {
+              setRenameName(event.target.value);
+              setRenameNameError(null);
+            }}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") {
+                event.preventDefault();
+                handleRename();
+              }
+              if (event.key === "Escape") {
+                closeRenameForm();
+              }
+            }}
+          />
+          {renameNameError ? (
+            <span id="renamed-view-name-error" className="text-red-700">
+              {renameNameError}
+            </span>
+          ) : null}
+        </label>
+        <button
+          type="button"
+          className="h-10 rounded-lg bg-blue-700 px-3 text-sm font-semibold text-white transition hover:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2"
+          onClick={handleRename}
+        >
+          Rename
+        </button>
+        <button
+          type="button"
+          className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+          onClick={closeRenameForm}
+        >
+          Cancel
+        </button>
+      </div>
+    );
+  }
+
+  if (isUpdateConfirmationOpen && selectedCustomView) {
+    return (
+      <div className="flex flex-wrap items-center gap-2 text-sm">
+        <span className="max-w-64 text-slate-700">
+          Overwrite &ldquo;{selectedCustomView.name}&rdquo; with the current
+          view?
+        </span>
+        <button
+          type="button"
+          className="h-10 rounded-lg border border-blue-700 bg-white px-3 font-semibold text-blue-700 transition hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700"
+          onClick={() => {
+            onSaveChanges(selectedCustomView.id);
+            setIsUpdateConfirmationOpen(false);
+          }}
+        >
+          Save changes
+        </button>
+        <button
+          type="button"
+          className="h-10 rounded-lg border border-slate-300 bg-white px-3 font-semibold text-slate-700 transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600"
+          onClick={() => setIsUpdateConfirmationOpen(false)}
+        >
+          Cancel
+        </button>
+      </div>
+    );
+  }
+
+  if (isDeleteConfirmationOpen && selectedCustomView) {
     return (
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <span className="max-w-52 text-slate-700">
-          Delete “{activeCustomView.name}”?
+          Delete &ldquo;{selectedCustomView.name}&rdquo;?
         </span>
         <button
           type="button"
           className="h-10 rounded-lg border border-red-700 bg-white px-3 font-semibold text-red-700 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700"
           onClick={() => {
-            onDelete(activeCustomView.id);
+            onDelete(selectedCustomView.id);
             setIsDeleteConfirmationOpen(false);
           }}
         >
@@ -142,15 +259,36 @@ export function SavedViewActions({
       >
         Save current view
       </button>
-      {activeCustomView ? (
-        <button
-          type="button"
-          disabled={!isLoaded}
-          className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-red-700 shadow-sm transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-          onClick={() => setIsDeleteConfirmationOpen(true)}
-        >
-          Delete view
-        </button>
+      {selectedCustomView ? (
+        <>
+          <button
+            type="button"
+            disabled={!isLoaded}
+            className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => {
+              setRenameName(selectedCustomView.name);
+              setIsRenameFormOpen(true);
+            }}
+          >
+            Rename
+          </button>
+          <button
+            type="button"
+            disabled={!isLoaded || !canSaveChanges}
+            className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => setIsUpdateConfirmationOpen(true)}
+          >
+            Save changes
+          </button>
+          <button
+            type="button"
+            disabled={!isLoaded}
+            className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-red-700 shadow-sm transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => setIsDeleteConfirmationOpen(true)}
+          >
+            Delete view
+          </button>
+        </>
       ) : null}
     </div>
   );

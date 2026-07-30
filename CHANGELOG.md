@@ -4,6 +4,10 @@
 
 ### Added
 
+- Added a Refund Rate by Category chart with canonical category coverage,
+  percentage labels, order-count tooltips, and safe zero-value handling.
+- Added focused refund-rate-by-category domain tests for calculations, category
+  ordering, empty states, and input immutability.
 - Added case-insensitive search across useful order fields, coordinated with
   filters across KPIs, charts, Scenario Mode, and the orders table.
 - Added basic order-table column visibility with Order ID permanently visible.
@@ -23,6 +27,9 @@
 
 ### Changed
 
+- Replaced the status-distribution chart with a category refund-pressure view
+  derived from the same filtered and searched orders as the Refund Rate KPI and
+  table.
 - Centralized filters, search, sorting, and visible columns in a serializable
   workbench view configuration restored by predefined saved views and reset.
 
@@ -45,12 +52,13 @@
   and reset behavior.
 - Added Refund Rate and Average Order Value KPI cards, plus safe empty-results
   and filtered-table pagination behavior.
-- Added coordinated Status filtering and an Orders by Status chart derived from
-  the same active filtered dataset as the KPI cards and orders table.
+- Added coordinated Status filtering derived from the same active filtered
+  dataset as the KPI cards, charts, and orders table.
 - Added inclusive From and To date filtering with dataset-derived input bounds,
   visible validation, active-filter labels, and shared reset behavior.
-- Added a Revenue over Time chart with continuous monthly aggregation, coordinated
-  through the same active filtered dataset as KPIs, Orders by Status, and the table.
+- Added a Revenue over Time chart with continuous monthly aggregation,
+  coordinated through the same active filtered dataset as KPIs, charts, and the
+  table.
 - Added predefined saved views that replace the complete filter state, show custom
   state after manual filter changes, and reset to Default Overview.
 - Added accessible mouse and keyboard order selection with selected-row styling and

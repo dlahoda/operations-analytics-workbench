@@ -256,7 +256,9 @@ Included:
   view collection;
 - selectable Average Order Value and Gross Margin scenario types;
 - one active scenario adjustment at a time, reset to neutral when its type
-  changes.
+  changes;
+- refund rate by category across the canonical category set, including
+  zero-order categories.
 
 Filters and search determine the shared active order collection used by KPI
 cards, charts, the table, and the Scenario Mode baseline. Sorting, pagination,
@@ -527,9 +529,12 @@ The workbench should feel like a practical internal tool with restrained visual 
 Recommended first charts:
 
 - revenue over time;
-- refund rate by category or orders by status.
+- refund rate by category.
 
-Charts should support the analytical story but remain secondary to the table.
+The category chart compares refunded orders divided by total orders for each
+canonical category. It retains zero-order categories with a zero rate and uses
+the shared filtered and searched order collection. Charts should support the
+analytical story but remain secondary to the table.
 
 #### Table Area
 
@@ -745,6 +750,7 @@ Domain functions should be framework-independent and testable:
 ```ts
 applyWorkbenchFiltersAndSearch(orders, filters, searchQuery);
 calculateMetrics(orders);
+calculateRefundRateByCategory(orders);
 resolveSavedView(view);
 applyScenario(metrics, scenario);
 ```

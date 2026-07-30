@@ -16,7 +16,8 @@ temporary projection without mutating source records.
 - Sortable, paginated orders table with basic column visibility and accessible
   row selection
 - Responsive order detail drawer with financial, operational, and activity data
-- Temporary Average Order Value scenario with baseline and projected impact
+- Temporary selectable Average Order Value and Gross Margin scenarios with one
+  active adjustment and baseline-to-projected impact
 - Empty-result and invalid-date-range handling
 
 ## Stack

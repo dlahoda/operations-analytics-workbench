@@ -1,23 +1,25 @@
 import type { WorkbenchFilters } from "@/domain/filters";
-import type { AovScenarioProjection } from "@/domain/scenarios";
 import {
-  AOV_ADJUSTMENT_MAX,
-  AOV_ADJUSTMENT_MIN,
-  AOV_ADJUSTMENT_STEP,
+  SCENARIO_ADJUSTMENT_CONSTRAINTS,
+  type ScenarioProjection,
+  type ScenarioState,
+  type ScenarioType,
 } from "@/domain/scenarios";
 import {
   formatCalendarDate,
   formatNumber,
+  formatPercentage,
   formatUsd,
 } from "@/lib/formatters";
 
 type ScenarioPanelProps = {
   activeViewName: string;
-  adjustmentPercent: number;
   filters: WorkbenchFilters;
   orderCount: number;
-  projection: AovScenarioProjection;
-  onAdjustmentChange: (adjustmentPercent: number) => void;
+  projection: ScenarioProjection;
+  scenario: ScenarioState;
+  onAdjustmentChange: (adjustment: number) => void;
+  onScenarioTypeChange: (type: ScenarioType) => void;
 };
 
 function getFilterSummary(filters: WorkbenchFilters): string {
@@ -36,14 +38,17 @@ function getFilterSummary(filters: WorkbenchFilters): string {
 
 export function ScenarioPanel({
   activeViewName,
-  adjustmentPercent,
   filters,
   orderCount,
   projection,
+  scenario,
   onAdjustmentChange,
+  onScenarioTypeChange,
 }: ScenarioPanelProps) {
-  const isNeutral = Math.abs(projection.absoluteRevenueDelta) < 0.005;
-  const isPositive = projection.absoluteRevenueDelta > 0;
+  const presentation = getScenarioPresentation(projection);
+  const constraints = SCENARIO_ADJUSTMENT_CONSTRAINTS[scenario.type];
+  const isNeutral = Math.abs(presentation.absoluteDelta) < 0.005;
+  const isPositive = presentation.absoluteDelta > 0;
   const deltaLabel = isNeutral
     ? "Neutral"
     : isPositive
@@ -54,17 +59,19 @@ export function ScenarioPanel({
     : isPositive
       ? "bg-emerald-50 text-emerald-800"
       : "bg-rose-50 text-rose-800";
-  const signedAdjustment =
-    adjustmentPercent > 0 ? `+${adjustmentPercent}%` : `${adjustmentPercent}%`;
+  const adjustmentUnit = scenario.type === "average-order-value" ? "%" : " pp";
+  const signedAdjustment = `${scenario.adjustment > 0 ? "+" : ""}${
+    scenario.adjustment
+  }${adjustmentUnit}`;
   const signedDelta = isNeutral
     ? formatUsd(0)
     : `${isPositive ? "+" : "−"}${formatUsd(
-        Math.abs(projection.absoluteRevenueDelta),
+        Math.abs(presentation.absoluteDelta),
       )}`;
   const signedDeltaPercent = isNeutral
     ? "0.0%"
     : `${isPositive ? "+" : "−"}${Math.abs(
-        projection.percentageRevenueDelta,
+        presentation.percentageDelta,
       ).toFixed(1)}%`;
 
   return (
@@ -81,7 +88,7 @@ export function ScenarioPanel({
             id="scenario-panel-title"
             className="mt-1 text-lg font-semibold text-slate-950"
           >
-            Average Order Value adjustment
+            {presentation.title}
           </h2>
         </div>
         <div className="text-sm text-slate-600 lg:text-right">
@@ -93,9 +100,31 @@ export function ScenarioPanel({
       </div>
 
       <div className="grid gap-5 py-5 lg:grid-cols-[minmax(16rem,1.2fr)_repeat(3,minmax(0,1fr))]">
-        <div className="flex flex-col justify-center gap-3">
+        <div className="flex flex-col justify-center gap-4">
+          <div>
+            <label
+              htmlFor="scenario-type"
+              className="mb-1.5 block text-sm font-medium text-slate-700"
+            >
+              Scenario type
+            </label>
+            <select
+              id="scenario-type"
+              value={scenario.type}
+              onChange={(event) =>
+                onScenarioTypeChange(event.target.value as ScenarioType)
+              }
+              className="h-10 w-full rounded-lg border border-slate-300 bg-white px-3 text-sm text-slate-800 shadow-sm focus:border-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-100"
+            >
+              <option value="average-order-value">Average Order Value</option>
+              <option value="gross-margin">Gross Margin</option>
+            </select>
+          </div>
+
           <div className="flex items-center justify-between text-sm font-medium text-slate-700">
-            <label htmlFor="aov-adjustment">AOV adjustment</label>
+            <label htmlFor="scenario-adjustment">
+              {presentation.adjustmentLabel}
+            </label>
             <output className="rounded-md bg-blue-50 px-2 py-1 font-semibold text-blue-800">
               {signedAdjustment}
             </output>
@@ -103,56 +132,64 @@ export function ScenarioPanel({
           <div className="flex items-center gap-3">
             <button
               type="button"
-              aria-label="Decrease AOV adjustment"
-              disabled={adjustmentPercent <= AOV_ADJUSTMENT_MIN}
+              aria-label={`Decrease ${presentation.adjustmentLabel.toLowerCase()}`}
+              disabled={scenario.adjustment <= constraints.min}
               className="size-8 shrink-0 rounded-md border border-slate-300 text-lg font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
               onClick={() =>
-                onAdjustmentChange(adjustmentPercent - AOV_ADJUSTMENT_STEP)
+                onAdjustmentChange(scenario.adjustment - constraints.step)
               }
             >
               −
             </button>
             <input
-              id="aov-adjustment"
+              id="scenario-adjustment"
               type="range"
-              min={AOV_ADJUSTMENT_MIN}
-              max={AOV_ADJUSTMENT_MAX}
-              step={AOV_ADJUSTMENT_STEP}
-              value={adjustmentPercent}
-              onChange={(event) => onAdjustmentChange(Number(event.target.value))}
+              min={constraints.min}
+              max={constraints.max}
+              step={constraints.step}
+              value={scenario.adjustment}
+              onChange={(event) =>
+                onAdjustmentChange(Number(event.target.value))
+              }
               className="w-full accent-blue-700"
             />
             <button
               type="button"
-              aria-label="Increase AOV adjustment"
-              disabled={adjustmentPercent >= AOV_ADJUSTMENT_MAX}
+              aria-label={`Increase ${presentation.adjustmentLabel.toLowerCase()}`}
+              disabled={scenario.adjustment >= constraints.max}
               className="size-8 shrink-0 rounded-md border border-slate-300 text-lg font-medium text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40"
               onClick={() =>
-                onAdjustmentChange(adjustmentPercent + AOV_ADJUSTMENT_STEP)
+                onAdjustmentChange(scenario.adjustment + constraints.step)
               }
             >
               +
             </button>
           </div>
           <span className="flex justify-between text-xs text-slate-500">
-            <span>{AOV_ADJUSTMENT_MIN}%</span>
-            <span>{AOV_ADJUSTMENT_MAX > 0 ? "+" : ""}{AOV_ADJUSTMENT_MAX}%</span>
+            <span>
+              {constraints.min}
+              {adjustmentUnit}
+            </span>
+            <span>
+              +{constraints.max}
+              {adjustmentUnit}
+            </span>
           </span>
         </div>
 
         <ScenarioMetric
-          label="Average Order Value"
-          baseline={formatUsd(projection.baselineAov)}
-          projected={formatUsd(projection.projectedAov)}
+          label={presentation.primaryMetricLabel}
+          baseline={presentation.primaryBaseline}
+          projected={presentation.primaryProjected}
         />
         <ScenarioMetric
-          label="Revenue"
-          baseline={formatUsd(projection.baselineRevenue)}
-          projected={formatUsd(projection.projectedRevenue)}
+          label={presentation.secondaryMetricLabel}
+          baseline={presentation.secondaryBaseline}
+          projected={presentation.secondaryProjected}
         />
         <div className="rounded-lg border border-slate-200 p-4">
           <p className="text-xs font-medium uppercase tracking-wide text-slate-500">
-            Revenue delta
+            {presentation.deltaMetricLabel}
           </p>
           <p className="mt-2 text-2xl font-semibold text-slate-950">
             {signedDelta}
@@ -171,11 +208,59 @@ export function ScenarioPanel({
       </div>
 
       <p className="border-t border-slate-200 pt-4 text-xs text-slate-500">
-        Temporary projection for the current filtered view. Baseline KPIs and
-        source orders remain unchanged.
+        Temporary projection for the active filtered and searched view.
+        Baseline KPIs and source orders remain unchanged.
       </p>
     </section>
   );
+}
+
+type ScenarioPresentation = {
+  title: string;
+  adjustmentLabel: string;
+  primaryMetricLabel: string;
+  primaryBaseline: string;
+  primaryProjected: string;
+  secondaryMetricLabel: string;
+  secondaryBaseline: string;
+  secondaryProjected: string;
+  deltaMetricLabel: string;
+  absoluteDelta: number;
+  percentageDelta: number;
+};
+
+function getScenarioPresentation(
+  projection: ScenarioProjection,
+): ScenarioPresentation {
+  if (projection.type === "average-order-value") {
+    return {
+      title: "Average Order Value adjustment",
+      adjustmentLabel: "AOV adjustment",
+      primaryMetricLabel: "Average Order Value",
+      primaryBaseline: formatUsd(projection.baselineAov),
+      primaryProjected: formatUsd(projection.projectedAov),
+      secondaryMetricLabel: "Revenue",
+      secondaryBaseline: formatUsd(projection.baselineRevenue),
+      secondaryProjected: formatUsd(projection.projectedRevenue),
+      deltaMetricLabel: "Revenue delta",
+      absoluteDelta: projection.absoluteRevenueDelta,
+      percentageDelta: projection.percentageRevenueDelta,
+    };
+  }
+
+  return {
+    title: "Gross Margin adjustment",
+    adjustmentLabel: "Margin adjustment",
+    primaryMetricLabel: "Margin Percentage",
+    primaryBaseline: formatPercentage(projection.baselineMarginPercentage),
+    primaryProjected: formatPercentage(projection.projectedMarginPercentage),
+    secondaryMetricLabel: "Gross Margin",
+    secondaryBaseline: formatUsd(projection.baselineGrossMargin),
+    secondaryProjected: formatUsd(projection.projectedGrossMargin),
+    deltaMetricLabel: "Gross Margin delta",
+    absoluteDelta: projection.absoluteGrossMarginDelta,
+    percentageDelta: projection.percentageGrossMarginDelta,
+  };
 }
 
 type ScenarioMetricProps = {

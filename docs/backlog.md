@@ -13,9 +13,12 @@ Items here are deferred beyond the active `v0.1.0` package or still require a de
 - Persist named custom views in validated, versioned browser local storage.
 - Apply and delete named custom views.
 
+## Completed in the third `v0.1.0` package
+
+- Select one supported scenario type while retaining one active adjustment.
+
 ## Deferred `v0.1.0` work
 
-- Let users choose one supported scenario type while retaining a single active adjustment.
 - Rename or overwrite an existing custom saved view.
 - Normalize the Orders by Status chart to show each status as a percentage of the active filtered dataset on a fixed 0–100% scale, while retaining absolute order counts in labels or tooltips.
 
@@ -28,7 +31,10 @@ Items here are deferred beyond the active `v0.1.0` package or still require a de
 - CSV and PDF export workflows.
 - Saved-view import and export.
 - Saved-view comparison and alerts.
-- Multi-variable scenarios, scenario persistence and comparison, forecasting models, and confidence intervals.
+- Multiple simultaneous scenario assumptions and scenario stacking.
+- Custom scenario builder and formulas.
+- Scenario persistence, saved presets, and comparison.
+- Forecasting models and confidence intervals.
 - Advanced table personalization and drag-and-drop dashboard building.
 - Server-side filtering, server-side pagination, or virtualization when data scale demonstrates a need.
 - Cross-workspace organization.

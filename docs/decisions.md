@@ -85,3 +85,10 @@ This file records durable product and architecture decisions already established
 - **Decision:** Store each named custom saved view as stable identity, user-visible metadata, and a complete cloned `WorkbenchViewConfig`. Persist only the custom saved-view collection in one versioned browser local-storage payload.
 - **Rationale:** Complete configs make predefined and custom view application consistent, while a versioned validation boundary safely supports front-end-only persistence without coupling saved views to operational data or framework state.
 - **Consequences:** Persisted payloads are treated as untrusted input. Unsupported versions produce an empty collection, invalid entries are skipped, and returned configs are defensively cloned. Operational records, active selection, unsaved session state, pagination, selection, drawer state, and Scenario Mode are not persisted.
+
+## 013 — Scenario Mode uses one explicit transient scenario state
+
+- **Status:** Accepted
+- **Decision:** Represent Scenario Mode with an explicit typed state containing one supported scenario type and one numeric adjustment. Exactly one scenario is active at a time, and changing its type resets the adjustment to that type's neutral value.
+- **Rationale:** A small discriminated model keeps Average Order Value and Gross Margin projections readable and extensible without introducing a generic configuration engine or presentation-layer formulas.
+- **Consequences:** Scenario constraints and calculations remain pure and framework-independent. Scenario enablement, type, and adjustment are transient workbench composition state and are excluded from `WorkbenchViewConfig`, predefined and custom saved views, URL state, and local-storage persistence.

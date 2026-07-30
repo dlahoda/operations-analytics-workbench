@@ -3,9 +3,9 @@
 *Product and Architecture Design Document*
 
 **Status:** Draft  
-**Target milestone:** `v0.1.0` workbench view configuration
+**Target milestone:** `v0.1.0` selectable Scenario Mode
 **Product direction:** Variant 2.5 - an operations analytics workbench with a constrained Scenario Mode  
-**Last reviewed:** July 23, 2026
+**Last reviewed:** July 24, 2026
 
 ## 1. Executive Summary
 
@@ -235,8 +235,9 @@ The scenario applies only to the current filtered dataset. It does not persist a
 ### 7.2 Active `v0.1.0` Package
 
 The `v0.1.0` packages make analytical and table state one coordinated,
-serializable configuration and allow that configuration to be saved locally as
-a named custom view.
+serializable configuration, allow that configuration to be saved locally as a
+named custom view, and extend Scenario Mode to two supported projections while
+retaining one active assumption.
 
 Included:
 
@@ -252,7 +253,10 @@ Included:
   change;
 - deletion of custom views with confirmation;
 - validated, versioned browser local-storage persistence for the custom saved
-  view collection.
+  view collection;
+- selectable Average Order Value and Gross Margin scenario types;
+- one active scenario adjustment at a time, reset to neutral when its type
+  changes.
 
 Filters and search determine the shared active order collection used by KPI
 cards, charts, the table, and the Scenario Mode baseline. Sorting, pagination,
@@ -266,7 +270,9 @@ return an empty collection and invalid entries are skipped.
 
 Only named custom views persist. The current active selection and any unsaved
 workbench session remain transient, so a reload may start on Default Overview
-while restoring the custom saved-view list.
+while restoring the custom saved-view list. Scenario state remains outside
+`WorkbenchViewConfig`, saved views, URL state, and local storage, and resets on
+page refresh.
 
 ### 7.3 MVP Scope
 
@@ -296,7 +302,9 @@ The MVP extends the first prototype into a small but coherent product.
 #### Scenario Mode
 
 - enable or disable Scenario Mode;
-- choose one scenario type;
+- choose Average Order Value percentage adjustment or Gross Margin
+  percentage-point adjustment;
+- keep exactly one scenario type active at a time;
 - adjust one numeric value;
 - show baseline versus projected metrics;
 - label projected values clearly;
@@ -411,13 +419,15 @@ Conceptual fields:
 
 ```ts
 type ScenarioState = {
-  enabled: boolean;
-  type: "average-order-value";
-  adjustmentPercent: number;
+  type: "average-order-value" | "gross-margin";
+  adjustment: number;
 };
 ```
 
-Only one scenario adjustment is active at a time.
+Only one scenario adjustment is active at a time. Scenario enablement and the
+typed scenario state are transient workbench composition state, separate from
+`WorkbenchViewConfig`. Changing scenario type resets the adjustment to that
+type's neutral value.
 
 ### 8.5 Mock Data Requirements
 
@@ -460,14 +470,27 @@ The sequence is:
 4. compare projected values with baseline values;
 5. display the delta without mutating source records.
 
-The initial AOV scenario uses:
+The Average Order Value scenario uses:
 
 ```text
 projectedAOV = baselineAOV × (1 + adjustment / 100)
 projectedRevenue = projectedAOV × baselineOrderCount
 ```
 
-The calculation holds `baselineOrderCount` constant. Scenario calculations must remain explicit, testable, and outside presentation components.
+The calculation holds `baselineOrderCount` constant.
+
+The Gross Margin scenario applies a percentage-point adjustment:
+
+```text
+projectedMarginPercentage = baselineMarginPercentage + adjustment / 100
+projectedGrossMargin = baselineRevenue × projectedMarginPercentage
+```
+
+Gross Margin projections do not clamp negative margin. Both scenario
+calculations remain explicit, pure, testable, and outside presentation
+components. Filters and search define their shared baseline; saved-view
+application may change that baseline but does not change the active scenario
+state.
 
 ## 10. UI Information Architecture
 
@@ -540,7 +563,8 @@ The panel should show:
 - baseline values;
 - projected values;
 - deltas;
-- a reminder that the projection applies only to the current filtered view.
+- a reminder that the projection applies only to the active filtered and
+  searched view.
 
 ## 11. Visual Prototype States
 
@@ -575,7 +599,7 @@ Shows a selected table row and a right-side record drawer while preserving the w
 Shows the signature interaction:
 
 - Scenario Mode enabled;
-- one AOV percentage adjustment;
+- one selected AOV percentage or Gross Margin percentage-point adjustment;
 - baseline and projected KPI comparison;
 - clear impact summary.
 
@@ -681,7 +705,7 @@ State that is temporary or purely presentational remains local:
 - drawer open or closed;
 - selected order;
 - table density;
-- temporary scenario adjustment;
+- temporary scenario enablement, type, and adjustment;
 - hover state;
 - expanded UI sections.
 
@@ -839,7 +863,7 @@ No virtualization, server-side pagination, or global state library should be add
 
 ### Risk 2: Scenario Mode Expands into a Forecasting Platform
 
-**Mitigation:** Allow one explicit adjustment at a time. Keep projection formulas simple, visible, and scoped to the active filtered view.
+**Mitigation:** Allow one explicit adjustment at a time. Keep projection formulas simple, visible, and scoped to the active filtered and searched view.
 
 ### Risk 3: Mock Data Feels Artificial
 

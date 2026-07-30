@@ -14,6 +14,12 @@
 - Added versioned, validated browser persistence for custom saved views.
 - Added persistence-boundary tests for custom-view cloning, names, payload
   validation, and unsupported values.
+- Added a Gross Margin percentage-point scenario with baseline and projected
+  margin impact.
+- Added selectable Scenario Mode with one active Average Order Value or Gross
+  Margin adjustment.
+- Added scenario projection and state-transition tests for neutral, positive,
+  negative, zero-baseline, and immutability behavior.
 
 ### Changed
 

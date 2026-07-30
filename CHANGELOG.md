@@ -2,12 +2,12 @@
 
 ## Unreleased
 
+## [0.1.0] - 2026-07-30
+
 ### Added
 
 - Added a Refund Rate by Category chart with canonical category coverage,
   percentage labels, order-count tooltips, and safe zero-value handling.
-- Added focused refund-rate-by-category domain tests for calculations, category
-  ordering, empty states, and input immutability.
 - Added case-insensitive search across useful order fields, coordinated with
   filters across KPIs, charts, Scenario Mode, and the orders table.
 - Added basic order-table column visibility with Order ID permanently visible.
@@ -16,18 +16,12 @@
 - Added custom saved-view application and confirmed deletion while preserving
   unsaved workbench state.
 - Added versioned, validated browser persistence for custom saved views.
-- Added persistence-boundary tests for custom-view cloning, names, payload
-  validation, and unsupported values.
 - Added a Gross Margin percentage-point scenario with baseline and projected
   margin impact.
 - Added selectable Scenario Mode with one active Average Order Value or Gross
   Margin adjustment.
-- Added scenario projection and state-transition tests for neutral, positive,
-  negative, zero-baseline, and immutability behavior.
 - Added custom saved-view rename and confirmed overwrite actions with
   case-insensitive name validation and defensive config cloning.
-- Added focused rename, overwrite, config equality, and persistence round-trip
-  tests.
 
 ### Changed
 

@@ -12,6 +12,7 @@ import {
   type SavedViewId,
 } from "@/domain/saved-views";
 import {
+  areWorkbenchViewConfigsEqual,
   createWorkbenchViewConfig,
   type OrderColumnId,
   type WorkbenchSort,
@@ -25,6 +26,8 @@ export function useWorkbenchViewState() {
     isLoaded: areCustomSavedViewsLoaded,
     saveCustomView,
     deleteCustomView,
+    renameCustomView,
+    updateCustomView,
   } = useCustomSavedViews();
   const [viewConfig, setViewConfig] = useState<WorkbenchViewConfig>(() =>
     createWorkbenchViewConfig(getSavedView(DEFAULT_SAVED_VIEW_ID).config),
@@ -34,6 +37,9 @@ export function useWorkbenchViewState() {
       type: "predefined",
       id: DEFAULT_SAVED_VIEW_ID,
     });
+  const [customSourceViewId, setCustomSourceViewId] = useState<string | null>(
+    null,
+  );
 
   const hasActiveFilters = Object.values(viewConfig.filters).some(
     (filterValue) => filterValue !== null,
@@ -42,11 +48,17 @@ export function useWorkbenchViewState() {
     activeSavedView,
     customSavedViews,
   );
+  const customSourceView =
+    customSavedViews.find((view) => view.id === customSourceViewId) ?? null;
+  const isCustomSourceDirty =
+    customSourceView !== null &&
+    !areWorkbenchViewConfigsEqual(viewConfig, customSourceView.config);
 
   function applyPredefinedView(savedViewId: SavedViewId) {
     const savedView = getSavedView(savedViewId);
     setViewConfig(createWorkbenchViewConfig(savedView.config));
     setActiveSavedView({ type: "predefined", id: savedViewId });
+    setCustomSourceViewId(null);
   }
 
   function applyCustomView(savedViewId: string) {
@@ -60,11 +72,13 @@ export function useWorkbenchViewState() {
 
     setViewConfig(createWorkbenchViewConfig(savedView.config));
     setActiveSavedView({ type: "custom", id: savedView.id });
+    setCustomSourceViewId(savedView.id);
   }
 
   function saveCurrentView(name: string) {
     const savedView = saveCustomView(name, viewConfig);
     setActiveSavedView({ type: "custom", id: savedView.id });
+    setCustomSourceViewId(savedView.id);
   }
 
   function deleteSavedCustomView(savedViewId: string) {
@@ -72,6 +86,18 @@ export function useWorkbenchViewState() {
     setActiveSavedView((current) =>
       current?.type === "custom" && current.id === savedViewId ? null : current,
     );
+    setCustomSourceViewId((current) =>
+      current === savedViewId ? null : current,
+    );
+  }
+
+  function renameSavedCustomView(savedViewId: string, name: string) {
+    renameCustomView(savedViewId, name);
+  }
+
+  function updateSavedCustomView(savedViewId: string) {
+    updateCustomView(savedViewId, viewConfig);
+    setActiveSavedView({ type: "custom", id: savedViewId });
   }
 
   function updateFilter<Key extends keyof WorkbenchFilters>(
@@ -131,6 +157,7 @@ export function useWorkbenchViewState() {
       createWorkbenchViewConfig(getSavedView(DEFAULT_SAVED_VIEW_ID).config),
     );
     setActiveSavedView({ type: "predefined", id: DEFAULT_SAVED_VIEW_ID });
+    setCustomSourceViewId(null);
   }
 
   return {
@@ -139,12 +166,16 @@ export function useWorkbenchViewState() {
     activeSavedView,
     activeViewName,
     customSavedViews,
+    customSourceViewId,
+    isCustomSourceDirty,
     areCustomSavedViewsLoaded,
     hasActiveFilters,
     applyPredefinedView,
     applyCustomView,
     saveCurrentView,
     deleteSavedCustomView,
+    renameSavedCustomView,
+    updateSavedCustomView,
     updateDateFrom,
     updateDateTo,
     updateRegion,

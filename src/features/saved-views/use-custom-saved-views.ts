@@ -9,8 +9,10 @@ import {
 } from "@/domain/custom-saved-views-storage";
 import {
   createCustomSavedView,
+  renameCustomSavedView,
   SAVED_VIEWS,
   type CustomSavedView,
+  updateCustomSavedViewConfig,
 } from "@/domain/saved-views";
 import type { WorkbenchViewConfig } from "@/domain/workbench-view-config";
 
@@ -92,10 +94,32 @@ export function useCustomSavedViews() {
     );
   }
 
+  function renameCustomView(id: string, name: string) {
+    if (!isLoaded) {
+      throw new Error("Custom saved views have not finished loading.");
+    }
+
+    setCustomSavedViews((current) =>
+      renameCustomSavedView(current, id, name),
+    );
+  }
+
+  function updateCustomView(id: string, config: WorkbenchViewConfig) {
+    if (!isLoaded) {
+      throw new Error("Custom saved views have not finished loading.");
+    }
+
+    setCustomSavedViews((current) =>
+      updateCustomSavedViewConfig(current, id, config),
+    );
+  }
+
   return {
     customSavedViews,
     isLoaded,
     saveCustomView,
     deleteCustomView,
+    renameCustomView,
+    updateCustomView,
   };
 }

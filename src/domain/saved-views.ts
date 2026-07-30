@@ -161,6 +161,52 @@ export function createCustomSavedView(
   };
 }
 
+export function getCustomSavedViewNameError(
+  name: string,
+  customSavedViews: readonly CustomSavedView[],
+  currentViewId?: string,
+): string | null {
+  return getSavedViewNameError(name, [
+    ...SAVED_VIEWS.map((view) => view.name),
+    ...customSavedViews
+      .filter((view) => view.id !== currentViewId)
+      .map((view) => view.name),
+  ]);
+}
+
+export function renameCustomSavedView(
+  customSavedViews: readonly CustomSavedView[],
+  id: string,
+  name: string,
+): CustomSavedView[] {
+  const normalizedName = name.trim();
+  const nameError = getCustomSavedViewNameError(
+    normalizedName,
+    customSavedViews,
+    id,
+  );
+
+  if (nameError) {
+    throw new Error(nameError);
+  }
+
+  return customSavedViews.map((savedView) =>
+    savedView.id === id ? { ...savedView, name: normalizedName } : savedView,
+  );
+}
+
+export function updateCustomSavedViewConfig(
+  customSavedViews: readonly CustomSavedView[],
+  id: string,
+  config: WorkbenchViewConfig,
+): CustomSavedView[] {
+  return customSavedViews.map((savedView) =>
+    savedView.id === id
+      ? { ...savedView, config: createWorkbenchViewConfig(config) }
+      : savedView,
+  );
+}
+
 export function cloneCustomSavedView(
   savedView: CustomSavedView,
 ): CustomSavedView {

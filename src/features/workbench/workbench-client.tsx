@@ -40,12 +40,16 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
     activeSavedView,
     activeViewName,
     customSavedViews,
+    customSourceViewId,
+    isCustomSourceDirty,
     areCustomSavedViewsLoaded,
     hasActiveFilters,
     applyPredefinedView,
     applyCustomView,
     saveCurrentView,
     deleteSavedCustomView,
+    renameSavedCustomView,
+    updateSavedCustomView,
     updateDateFrom,
     updateDateTo,
     updateRegion,
@@ -133,10 +137,13 @@ export function WorkbenchClient({ initialOrders }: WorkbenchClientProps) {
                   onCustomViewChange={applyCustomView}
                 />
                 <SavedViewActions
-                  activeSavedView={activeSavedView}
+                  customSourceViewId={customSourceViewId}
                   customSavedViews={customSavedViews}
+                  canUpdate={isCustomSourceDirty}
                   isLoaded={areCustomSavedViewsLoaded}
                   onSave={saveCurrentView}
+                  onRename={renameSavedCustomView}
+                  onUpdate={updateSavedCustomView}
                   onDelete={deleteSavedCustomView}
                 />
               </div>

@@ -22,9 +22,12 @@ Items here are deferred beyond the active `v0.1.0` package or still require a de
 - Compare refund rates across all product categories using the same active
   filtered and searched orders as the Refund Rate KPI and table.
 
-## Deferred `v0.1.0` work
+## Completed in the fifth `v0.1.0` package
 
-- Rename or overwrite an existing custom saved view.
+- Rename an existing custom saved view without changing its identity, config,
+  or collection position.
+- Overwrite an existing custom saved view with the complete current workbench
+  config without changing its identity, name, or collection position.
 
 ## Later
 

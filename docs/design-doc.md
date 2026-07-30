@@ -252,6 +252,8 @@ Included:
 - custom-view labeling after any manual filter, search, sorting, or visibility
   change;
 - deletion of custom views with confirmation;
+- renaming custom views and confirmed overwrite with the complete current
+  workbench config;
 - validated, versioned browser local-storage persistence for the custom saved
   view collection;
 - selectable Average Order Value and Gross Margin scenario types;
@@ -267,12 +269,19 @@ collection.
 
 Saved-view identity and metadata remain outside `WorkbenchViewConfig`.
 Predefined and custom views both apply a defensive copy of a complete config.
+Custom rename preserves identity, config, and collection order. Custom
+overwrite preserves identity, name, and collection order while replacing the
+stored config with a defensive clone.
 The local-storage payload is treated as untrusted input: unsupported versions
 return an empty collection and invalid entries are skipped.
 
 Only named custom views persist. The current active selection and any unsaved
 workbench session remain transient, so a reload may start on Default Overview
-while restoring the custom saved-view list. Scenario state remains outside
+while restoring the custom saved-view list. A transient custom source reference
+survives manual workbench changes so the source can be renamed or overwritten
+even when the active label becomes “Custom view.” Applying a predefined view,
+resetting, saving a new custom view, or deleting the source replaces or clears
+that reference as appropriate. Scenario state remains outside
 `WorkbenchViewConfig`, saved views, URL state, and local storage, and resets on
 page refresh.
 
@@ -295,6 +304,7 @@ The MVP extends the first prototype into a small but coherent product.
 - save a current filter and table configuration as a named local view;
 - reset to the default view;
 - persist local custom views in browser storage.
+- rename a custom view and overwrite its stored configuration.
 
 #### Detail Inspection
 
@@ -411,7 +421,9 @@ sorting, and supported visible columns as plain serializable values. Saved-view
 identity and metadata are separate from that config. Predefined views resolve a
 complete config, while named custom views store a cloned complete config in a
 versioned, validated browser local-storage payload. Operational records are
-never copied into a saved view.
+never copied into a saved view. Rename changes only a normalized custom-view
+name. Overwrite replaces only its cloned config, preserving identity and
+collection order.
 
 ### 8.4 Scenario State
 

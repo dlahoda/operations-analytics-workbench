@@ -92,3 +92,16 @@ This file records durable product and architecture decisions already established
 - **Decision:** Represent Scenario Mode with an explicit typed state containing one supported scenario type and one numeric adjustment. Exactly one scenario is active at a time, and changing its type resets the adjustment to that type's neutral value.
 - **Rationale:** A small discriminated model keeps Average Order Value and Gross Margin projections readable and extensible without introducing a generic configuration engine or presentation-layer formulas.
 - **Consequences:** Scenario constraints and calculations remain pure and framework-independent. Scenario enablement, type, and adjustment are transient workbench composition state and are excluded from `WorkbenchViewConfig`, predefined and custom saved views, URL state, and local-storage persistence.
+
+## 014 — Custom saved-view source identity is distinct from clean active state
+
+- **Status:** Accepted
+- **Decision:** Retain a transient reference to the custom saved view that
+  supplied the workbench config separately from the clean active-view label.
+- **Rationale:** Manual workbench changes must be shown as unsaved while still
+  allowing the originating custom view to be renamed or overwritten.
+- **Consequences:** Manual filter, search, sorting, and visibility changes may
+  change the active label to “Custom view” without clearing the custom source.
+  Applying a predefined view or resetting clears the source; save-as-new
+  replaces it; deleting it clears it; and a successful overwrite makes the
+  source active and clean again. The source reference is not persisted.

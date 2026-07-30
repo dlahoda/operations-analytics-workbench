@@ -24,6 +24,10 @@
   Margin adjustment.
 - Added scenario projection and state-transition tests for neutral, positive,
   negative, zero-baseline, and immutability behavior.
+- Added custom saved-view rename and confirmed overwrite actions with
+  case-insensitive name validation and defensive config cloning.
+- Added focused rename, overwrite, config equality, and persistence round-trip
+  tests.
 
 ### Changed
 
@@ -32,6 +36,9 @@
   table.
 - Centralized filters, search, sorting, and visible columns in a serializable
   workbench view configuration restored by predefined saved views and reset.
+- Retained custom saved-view source identity through unsaved workbench changes
+  so the source can be renamed or updated while the active label remains
+  “Custom view.”
 
 ## [0.0.0] - 2026-07-23
 

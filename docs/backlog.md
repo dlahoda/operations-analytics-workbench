@@ -17,11 +17,14 @@ Items here are deferred beyond the active `v0.1.0` package or still require a de
 
 - Select one supported scenario type while retaining one active adjustment.
 
+## Completed in the fourth `v0.1.0` package
+
+- Compare refund rates across all product categories using the same active
+  filtered and searched orders as the Refund Rate KPI and table.
+
 ## Deferred `v0.1.0` work
 
 - Rename or overwrite an existing custom saved view.
-- Normalize the Orders by Status chart to show each status as a percentage of the active filtered dataset on a fixed 0–100% scale, while retaining absolute order counts in labels or tooltips.
-
 
 ## Later
 

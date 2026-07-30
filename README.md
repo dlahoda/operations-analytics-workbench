@@ -12,7 +12,7 @@ temporary projection without mutating source records.
 - Named custom saved views with application, confirmed deletion, and validated
   browser-local persistence
 - Revenue, order count, refund rate, and average order value KPIs
-- Revenue-over-time and orders-by-status charts
+- Revenue-over-time and refund-rate-by-category charts
 - Sortable, paginated orders table with basic column visibility and accessible
   row selection
 - Responsive order detail drawer with financial, operational, and activity data

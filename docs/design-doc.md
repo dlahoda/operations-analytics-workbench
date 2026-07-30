@@ -2,10 +2,10 @@
 
 *Product and Architecture Design Document*
 
-**Status:** Draft  
-**Target milestone:** `v0.1.0` selectable Scenario Mode
+**Status:** Implemented through `v0.1.0`
+**Released milestone:** `v0.1.0`
 **Product direction:** Variant 2.5 - an operations analytics workbench with a constrained Scenario Mode  
-**Last reviewed:** July 24, 2026
+**Last reviewed:** July 30, 2026
 
 ## 1. Executive Summary
 
@@ -232,7 +232,7 @@ The scenario applies only to the current filtered dataset. It does not persist a
 - complex table personalization;
 - server-side filtering or pagination.
 
-### 7.2 Active `v0.1.0` Package
+### 7.2 Released `v0.1.0` Scope
 
 The `v0.1.0` packages make analytical and table state one coordinated,
 serializable configuration, allow that configuration to be saved locally as a

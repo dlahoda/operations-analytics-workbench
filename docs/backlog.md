@@ -1,28 +1,31 @@
 # Backlog
 
-Items here are deferred beyond the active `v0.1.0` package or still require a decision.
+Items here are deferred beyond the released `v0.1.0` scope or still require a
+decision. No future release scope is assigned.
 
-## Completed in the first `v0.1.0` package
+## Completed `v0.1.0` release history
+
+### First package
 
 - Search across useful order fields.
 - Basic column visibility.
 
-## Completed in the second `v0.1.0` package
+### Second package
 
 - Save the complete current workbench configuration as a named local view.
 - Persist named custom views in validated, versioned browser local storage.
 - Apply and delete named custom views.
 
-## Completed in the third `v0.1.0` package
+### Third package
 
 - Select one supported scenario type while retaining one active adjustment.
 
-## Completed in the fourth `v0.1.0` package
+### Fourth package
 
 - Compare refund rates across all product categories using the same active
   filtered and searched orders as the Refund Rate KPI and table.
 
-## Completed in the fifth `v0.1.0` package
+### Fifth package
 
 - Rename an existing custom saved view without changing its identity, config,
   or collection position.

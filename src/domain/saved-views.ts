@@ -109,6 +109,38 @@ export function getSavedView(savedViewId: SavedViewId): SavedView {
   return savedView;
 }
 
+export function getSavedViewRefAfterManualChange(
+  activeSavedView: ActiveSavedViewRef,
+): ActiveSavedViewRef {
+  return activeSavedView?.type === "custom" ? activeSavedView : null;
+}
+
+export function getSavedViewDisplayName(
+  activeSavedView: ActiveSavedViewRef,
+  customSavedViews: readonly CustomSavedView[],
+  isActiveCustomViewDirty = false,
+): string {
+  if (activeSavedView === null) {
+    return "Custom view";
+  }
+
+  if (activeSavedView.type === "predefined") {
+    return getSavedView(activeSavedView.id).name;
+  }
+
+  const customView = customSavedViews.find(
+    (savedView) => savedView.id === activeSavedView.id,
+  );
+
+  if (!customView) {
+    return "Custom view";
+  }
+
+  return isActiveCustomViewDirty
+    ? `${customView.name} (modified)`
+    : customView.name;
+}
+
 export function getSavedViewNameError(
   name: string,
   existingNames: readonly string[] = [],

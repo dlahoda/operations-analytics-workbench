@@ -36,9 +36,9 @@
   table.
 - Centralized filters, search, sorting, and visible columns in a serializable
   workbench view configuration restored by predefined saved views and reset.
-- Retained custom saved-view source identity through unsaved workbench changes
-  so the source can be renamed or updated while the active label remains
-  “Custom view.”
+- Kept edited custom saved views selected with a “(modified)” label and a
+  dirty-only Save changes action, while edits from predefined views continue to
+  use the unsaved “Custom view” state.
 
 ## [0.0.0] - 2026-07-23
 

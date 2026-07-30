@@ -10,24 +10,24 @@ import {
 } from "@/domain/saved-views";
 
 type SavedViewActionsProps = {
-  customSourceViewId: string | null;
+  selectedCustomViewId: string | null;
   customSavedViews: readonly CustomSavedView[];
-  canUpdate: boolean;
+  canSaveChanges: boolean;
   isLoaded?: boolean;
   onSave: (name: string) => void;
   onRename: (id: string, name: string) => void;
-  onUpdate: (id: string) => void;
+  onSaveChanges: (id: string) => void;
   onDelete: (id: string) => void;
 };
 
 export function SavedViewActions({
-  customSourceViewId,
+  selectedCustomViewId,
   customSavedViews,
-  canUpdate,
+  canSaveChanges,
   isLoaded = true,
   onSave,
   onRename,
-  onUpdate,
+  onSaveChanges,
   onDelete,
 }: SavedViewActionsProps) {
   const [isSaveFormOpen, setIsSaveFormOpen] = useState(false);
@@ -40,9 +40,8 @@ export function SavedViewActions({
     useState(false);
   const [isDeleteConfirmationOpen, setIsDeleteConfirmationOpen] =
     useState(false);
-  const customSourceView =
-    customSavedViews.find((view) => view.id === customSourceViewId) ?? null;
-  const activeCustomView = customSourceView;
+  const selectedCustomView =
+    customSavedViews.find((view) => view.id === selectedCustomViewId) ?? null;
 
   function closeSaveForm() {
     setIsSaveFormOpen(false);
@@ -72,14 +71,14 @@ export function SavedViewActions({
   }
 
   function handleRename() {
-    if (!customSourceView) {
+    if (!selectedCustomView) {
       return;
     }
 
     const error = getCustomSavedViewNameError(
       renameName,
       customSavedViews,
-      customSourceView.id,
+      selectedCustomView.id,
     );
 
     if (error) {
@@ -87,7 +86,7 @@ export function SavedViewActions({
       return;
     }
 
-    onRename(customSourceView.id, renameName);
+    onRename(selectedCustomView.id, renameName);
     closeRenameForm();
   }
 
@@ -143,7 +142,7 @@ export function SavedViewActions({
     );
   }
 
-  if (isRenameFormOpen && customSourceView) {
+  if (isRenameFormOpen && selectedCustomView) {
     return (
       <div className="flex flex-wrap items-end gap-2">
         <label className="flex flex-col gap-1 text-xs font-medium text-slate-600">
@@ -195,21 +194,22 @@ export function SavedViewActions({
     );
   }
 
-  if (isUpdateConfirmationOpen && customSourceView) {
+  if (isUpdateConfirmationOpen && selectedCustomView) {
     return (
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <span className="max-w-64 text-slate-700">
-          Overwrite &ldquo;{customSourceView.name}&rdquo; with the current view?
+          Overwrite &ldquo;{selectedCustomView.name}&rdquo; with the current
+          view?
         </span>
         <button
           type="button"
           className="h-10 rounded-lg border border-blue-700 bg-white px-3 font-semibold text-blue-700 transition hover:bg-blue-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700"
           onClick={() => {
-            onUpdate(customSourceView.id);
+            onSaveChanges(selectedCustomView.id);
             setIsUpdateConfirmationOpen(false);
           }}
         >
-          Update
+          Save changes
         </button>
         <button
           type="button"
@@ -222,17 +222,17 @@ export function SavedViewActions({
     );
   }
 
-  if (isDeleteConfirmationOpen && activeCustomView) {
+  if (isDeleteConfirmationOpen && selectedCustomView) {
     return (
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <span className="max-w-52 text-slate-700">
-          Delete “{activeCustomView.name}”?
+          Delete &ldquo;{selectedCustomView.name}&rdquo;?
         </span>
         <button
           type="button"
           className="h-10 rounded-lg border border-red-700 bg-white px-3 font-semibold text-red-700 transition hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700"
           onClick={() => {
-            onDelete(activeCustomView.id);
+            onDelete(selectedCustomView.id);
             setIsDeleteConfirmationOpen(false);
           }}
         >
@@ -259,14 +259,14 @@ export function SavedViewActions({
       >
         Save current view
       </button>
-      {customSourceView ? (
+      {selectedCustomView ? (
         <>
           <button
             type="button"
             disabled={!isLoaded}
             className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() => {
-              setRenameName(customSourceView.name);
+              setRenameName(selectedCustomView.name);
               setIsRenameFormOpen(true);
             }}
           >
@@ -274,11 +274,11 @@ export function SavedViewActions({
           </button>
           <button
             type="button"
-            disabled={!isLoaded || !canUpdate}
+            disabled={!isLoaded || !canSaveChanges}
             className="h-10 rounded-lg border border-slate-300 bg-white px-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 disabled:cursor-not-allowed disabled:opacity-50"
             onClick={() => setIsUpdateConfirmationOpen(true)}
           >
-            Update
+            Save changes
           </button>
           <button
             type="button"

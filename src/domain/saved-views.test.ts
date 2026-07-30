@@ -2,8 +2,11 @@ import { describe, expect, it } from "vitest";
 
 import {
   createCustomSavedView,
+  DEFAULT_SAVED_VIEW_ID,
   getCustomSavedViewNameError,
+  getSavedViewDisplayName,
   getSavedViewNameError,
+  getSavedViewRefAfterManualChange,
   MAX_SAVED_VIEW_NAME_LENGTH,
   renameCustomSavedView,
   SAVED_VIEWS,
@@ -200,6 +203,53 @@ describe("custom saved views", () => {
     currentConfig.visibleColumns = currentConfig.visibleColumns.slice(0, -1);
     expect(areWorkbenchViewConfigsEqual(currentConfig, storedConfig)).toBe(
       false,
+    );
+  });
+
+  it("retains custom selection after manual changes but clears predefined selection", () => {
+    const customSelection = { type: "custom" as const, id: "view-1" };
+    const predefinedSelection = {
+      type: "predefined" as const,
+      id: DEFAULT_SAVED_VIEW_ID,
+    };
+
+    expect(getSavedViewRefAfterManualChange(customSelection)).toBe(
+      customSelection,
+    );
+    expect(getSavedViewRefAfterManualChange(predefinedSelection)).toBeNull();
+    expect(getSavedViewRefAfterManualChange(null)).toBeNull();
+  });
+
+  it("marks only a dirty selected custom view as modified", () => {
+    const customView = createCustomSavedView(
+      "view-1",
+      "Europe Daily",
+      createWorkbenchViewConfig(),
+    );
+
+    expect(
+      getSavedViewDisplayName(
+        { type: "custom", id: customView.id },
+        [customView],
+        false,
+      ),
+    ).toBe("Europe Daily");
+    expect(
+      getSavedViewDisplayName(
+        { type: "custom", id: customView.id },
+        [customView],
+        true,
+      ),
+    ).toBe("Europe Daily (modified)");
+    expect(
+      getSavedViewDisplayName(
+        { type: "predefined", id: DEFAULT_SAVED_VIEW_ID },
+        [customView],
+        true,
+      ),
+    ).toBe("Default Overview");
+    expect(getSavedViewDisplayName(null, [customView], true)).toBe(
+      "Custom view",
     );
   });
 });

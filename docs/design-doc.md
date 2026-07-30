@@ -249,8 +249,9 @@ Included:
 - named custom saved views that clone and restore a complete
   `WorkbenchViewConfig`;
 - grouped predefined and custom saved-view selection;
-- custom-view labeling after any manual filter, search, sorting, or visibility
-  change;
+- selected custom-view dirty labeling after any manual filter, search, sorting,
+  or visibility change, while edits from predefined views use an unsaved
+  “Custom view” state;
 - deletion of custom views with confirmation;
 - renaming custom views and confirmed overwrite with the complete current
   workbench config;
@@ -277,11 +278,14 @@ return an empty collection and invalid entries are skipped.
 
 Only named custom views persist. The current active selection and any unsaved
 workbench session remain transient, so a reload may start on Default Overview
-while restoring the custom saved-view list. A transient custom source reference
-survives manual workbench changes so the source can be renamed or overwritten
-even when the active label becomes “Custom view.” Applying a predefined view,
-resetting, saving a new custom view, or deleting the source replaces or clears
-that reference as appropriate. Scenario state remains outside
+while restoring the custom saved-view list. A selected custom view remains
+selected through manual workbench changes and is labeled “(modified)” while its
+current config differs from the stored config. Saving those changes makes it
+clean again. Manual changes from a predefined view instead use the unsaved
+“Custom view” state because predefined views cannot be overwritten. Applying
+another view, resetting, saving a new custom view, or deleting the selected
+custom view updates or clears the selection as appropriate. Scenario state
+remains outside
 `WorkbenchViewConfig`, saved views, URL state, and local storage, and resets on
 page refresh.
 

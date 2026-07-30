@@ -93,15 +93,17 @@ This file records durable product and architecture decisions already established
 - **Rationale:** A small discriminated model keeps Average Order Value and Gross Margin projections readable and extensible without introducing a generic configuration engine or presentation-layer formulas.
 - **Consequences:** Scenario constraints and calculations remain pure and framework-independent. Scenario enablement, type, and adjustment are transient workbench composition state and are excluded from `WorkbenchViewConfig`, predefined and custom saved views, URL state, and local-storage persistence.
 
-## 014 — Custom saved-view source identity is distinct from clean active state
+## 014 — Selected custom-view identity is distinct from dirty state
 
 - **Status:** Accepted
-- **Decision:** Retain a transient reference to the custom saved view that
-  supplied the workbench config separately from the clean active-view label.
-- **Rationale:** Manual workbench changes must be shown as unsaved while still
-  allowing the originating custom view to be renamed or overwritten.
-- **Consequences:** Manual filter, search, sorting, and visibility changes may
-  change the active label to “Custom view” without clearing the custom source.
-  Applying a predefined view or resetting clears the source; save-as-new
-  replaces it; deleting it clears it; and a successful overwrite makes the
-  source active and clean again. The source reference is not persisted.
+- **Decision:** Keep a custom saved view selected through manual workbench
+  changes and track config dirty state separately from selected-view identity.
+- **Rationale:** The selected view must remain visible when an enabled save
+  action targets it; dirty state communicates that its stored config differs
+  from the current workbench config.
+- **Consequences:** Dirty selected custom views display “(modified)” and allow
+  Save changes. Saving removes the marker and disables the action. Manual
+  changes from a predefined view clear that selection and display the unsaved
+  “Custom view” state because predefined views cannot be overwritten. Applying
+  another view, resetting, saving a new custom view, or deleting the selected
+  custom view updates or clears selection normally. Selection is not persisted.

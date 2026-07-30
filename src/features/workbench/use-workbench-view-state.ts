@@ -7,8 +7,9 @@ import type { Category, OrderStatus, Region } from "@/domain/orders";
 import {
   DEFAULT_SAVED_VIEW_ID,
   getSavedView,
+  getSavedViewDisplayName,
+  getSavedViewRefAfterManualChange,
   type ActiveSavedViewRef,
-  type CustomSavedView,
   type SavedViewId,
 } from "@/domain/saved-views";
 import {
@@ -37,28 +38,27 @@ export function useWorkbenchViewState() {
       type: "predefined",
       id: DEFAULT_SAVED_VIEW_ID,
     });
-  const [customSourceViewId, setCustomSourceViewId] = useState<string | null>(
-    null,
-  );
 
   const hasActiveFilters = Object.values(viewConfig.filters).some(
     (filterValue) => filterValue !== null,
   );
-  const activeViewName = getActiveViewName(
+  const activeCustomView =
+    activeSavedView?.type === "custom"
+      ? customSavedViews.find((view) => view.id === activeSavedView.id) ?? null
+      : null;
+  const isActiveCustomViewDirty =
+    activeCustomView !== null &&
+    !areWorkbenchViewConfigsEqual(viewConfig, activeCustomView.config);
+  const activeViewName = getSavedViewDisplayName(
     activeSavedView,
     customSavedViews,
+    isActiveCustomViewDirty,
   );
-  const customSourceView =
-    customSavedViews.find((view) => view.id === customSourceViewId) ?? null;
-  const isCustomSourceDirty =
-    customSourceView !== null &&
-    !areWorkbenchViewConfigsEqual(viewConfig, customSourceView.config);
 
   function applyPredefinedView(savedViewId: SavedViewId) {
     const savedView = getSavedView(savedViewId);
     setViewConfig(createWorkbenchViewConfig(savedView.config));
     setActiveSavedView({ type: "predefined", id: savedViewId });
-    setCustomSourceViewId(null);
   }
 
   function applyCustomView(savedViewId: string) {
@@ -72,22 +72,17 @@ export function useWorkbenchViewState() {
 
     setViewConfig(createWorkbenchViewConfig(savedView.config));
     setActiveSavedView({ type: "custom", id: savedView.id });
-    setCustomSourceViewId(savedView.id);
   }
 
   function saveCurrentView(name: string) {
     const savedView = saveCustomView(name, viewConfig);
     setActiveSavedView({ type: "custom", id: savedView.id });
-    setCustomSourceViewId(savedView.id);
   }
 
   function deleteSavedCustomView(savedViewId: string) {
     deleteCustomView(savedViewId);
     setActiveSavedView((current) =>
       current?.type === "custom" && current.id === savedViewId ? null : current,
-    );
-    setCustomSourceViewId((current) =>
-      current === savedViewId ? null : current,
     );
   }
 
@@ -97,7 +92,6 @@ export function useWorkbenchViewState() {
 
   function updateSavedCustomView(savedViewId: string) {
     updateCustomView(savedViewId, viewConfig);
-    setActiveSavedView({ type: "custom", id: savedViewId });
   }
 
   function updateFilter<Key extends keyof WorkbenchFilters>(
@@ -108,7 +102,7 @@ export function useWorkbenchViewState() {
       ...current,
       filters: { ...current.filters, [key]: value },
     }));
-    setActiveSavedView(null);
+    setActiveSavedView(getSavedViewRefAfterManualChange);
   }
 
   function updateDateFrom(dateFrom: string | null) {
@@ -136,12 +130,12 @@ export function useWorkbenchViewState() {
       ...current,
       sorting: sorting.map((sort) => ({ ...sort })),
     }));
-    setActiveSavedView(null);
+    setActiveSavedView(getSavedViewRefAfterManualChange);
   }
 
   function updateSearchQuery(searchQuery: string) {
     setViewConfig((current) => ({ ...current, searchQuery }));
-    setActiveSavedView(null);
+    setActiveSavedView(getSavedViewRefAfterManualChange);
   }
 
   function updateVisibleColumns(visibleColumns: OrderColumnId[]) {
@@ -149,7 +143,7 @@ export function useWorkbenchViewState() {
       ...current,
       visibleColumns: [...visibleColumns],
     }));
-    setActiveSavedView(null);
+    setActiveSavedView(getSavedViewRefAfterManualChange);
   }
 
   function resetView() {
@@ -157,7 +151,6 @@ export function useWorkbenchViewState() {
       createWorkbenchViewConfig(getSavedView(DEFAULT_SAVED_VIEW_ID).config),
     );
     setActiveSavedView({ type: "predefined", id: DEFAULT_SAVED_VIEW_ID });
-    setCustomSourceViewId(null);
   }
 
   return {
@@ -166,8 +159,7 @@ export function useWorkbenchViewState() {
     activeSavedView,
     activeViewName,
     customSavedViews,
-    customSourceViewId,
-    isCustomSourceDirty,
+    isActiveCustomViewDirty,
     areCustomSavedViewsLoaded,
     hasActiveFilters,
     applyPredefinedView,
@@ -186,22 +178,4 @@ export function useWorkbenchViewState() {
     updateVisibleColumns,
     resetView,
   };
-}
-
-function getActiveViewName(
-  activeSavedView: ActiveSavedViewRef,
-  customSavedViews: readonly CustomSavedView[],
-): string {
-  if (activeSavedView === null) {
-    return "Custom view";
-  }
-
-  if (activeSavedView.type === "predefined") {
-    return getSavedView(activeSavedView.id).name;
-  }
-
-  return (
-    customSavedViews.find((savedView) => savedView.id === activeSavedView.id)
-      ?.name ?? "Custom view"
-  );
 }
